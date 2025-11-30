@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BenchmarkWidget</class>
+ <widget class="QWidget" name="BenchmarkWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1020</width>
+    <height>620</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QFrame" name="test_secenekleri_frame">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>680</width>
+     <height>250</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#test_secenekleri_frame {
+    background-color: #2b2e38;
+    border-radius: 15px;
+    border: 1px solid #3c404d;
+}
+
+QLabel {
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#yeni_benchmark_baslik {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3c404d;
+    margin-bottom: 10px;
+}
+
+QCheckBox {
+    color: #e0e0e0;
+    font-size: 15px;
+    font-family: 'Segoe UI', sans-serif;
+    spacing: 12px;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+QCheckBox::indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid #5c6370;
+    background-color: #363a45;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #4facfe;
+    background-color: #3c404d;
+}
+
+QCheckBox::indicator:checked {
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #4facfe, stop:1 #00f2fe);
+    border-color: #00f2fe;
+}
+
+QCheckBox:hover {
+    background-color: #363a45;
+}</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="yeni_benchmark_baslik">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Benchmark Testi&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <widget class="QCheckBox" name="cpu_testi_cb">
+          <property name="text">
+           <string>CPU Testleri</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="gpu_testi_cb_2">
+          <property name="text">
+           <string>GPU Testleri</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="bellek_testi_cb">
+          <property name="text">
+           <string>Bellek Testleri</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="testi_baslat_buton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Testi Başlat</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QFrame" name="sonuc_gecmisi_frame">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>10</y>
+     <width>310</width>
+     <height>580</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#sonuc_gecmisi_frame {
+    background-color: #2b2e38;
+    border-radius: 15px;
+    border: 1px solid #3c404d;
+}
+
+QLabel {
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#sonuc_gecmisi_baslik {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3c404d;
+    margin-bottom: 10px;
+}
+
+QListWidget {
+    background-color: #2b2e38;
+    border: none;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+}
+
+QListWidget::item {
+    padding: 10px;
+    border-bottom: 1px solid #3c404d;
+}
+
+QListWidget::item:selected {
+    background-color: #3c404d;
+    color: #ffffff;
+}</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_11">
+    <item>
+     <widget class="QLabel" name="sonuc_gecmisi_baslik">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Sonuç Geçmişi&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QListWidget" name="sonuc_gecmisi_listesi">
+      <property name="styleSheet">
+       <string notr="true">background-color: transparent; border: none;</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>2024-07-25: - 14500 pts</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2024-07-25: - 14200 pts</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2024-07-25: - 14200 pts</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2024-07-25: - 14200 pts</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>2024-07-25: - 28000 pts</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QFrame" name="canli_test_verileri_frame">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>270</y>
+     <width>680</width>
+     <height>320</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#canli_test_verileri_frame {
+    background-color: #2b2e38;
+    border-radius: 15px;
+    border: 1px solid #3c404d;
+}
+
+QLabel {
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#canli_veri_baslik {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3c404d;
+    margin-bottom: 10px;
+}</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_12">
+    <item>
+     <widget class="QLabel" name="canli_veri_baslik">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Canlı Test Verileri&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="canli_grafik_tutucu" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: transparent;</string>
+      </property>
+      <widget class="QLabel" name="placeholder_canli_grafik">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>661</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: #666; font-size: 10pt;</string>
+       </property>
+       <property name="text">
+        <string>Grafik Alanı (Dairesel İlerleme ve Çizgi Grafik)</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QLabel" name="henuz_test_baslatilmadi_label">
+        <property name="text">
+         <string>Henüz bir test çalıştırılmadı.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="testi_iptal_et_buton">
+        <property name="styleSheet">
+         <string notr="true">background-color: #dc3545; border-radius: 5px; padding: 5px 15px;</string>
+        </property>
+        <property name="text">
+         <string>Testi İptal Et</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

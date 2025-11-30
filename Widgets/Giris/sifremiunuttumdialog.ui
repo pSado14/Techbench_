@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SifremiUnuttumDialog</class>
+ <widget class="QDialog" name="SifremiUnuttumDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Şifremi Unuttum</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #2b2b2b; color: white; font-family: 'Segoe UI', sans-serif;</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="pageEmail">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Şifre Sıfırlama&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Lütfen hesabınıza bağlı e-posta adresini girin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="emailLineEdit">
+         <property name="placeholderText">
+          <string>E-posta Adresi</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 8px; border-radius: 4px; background-color: #3a3f4b; border: 1px solid #555;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="kodGonderButon">
+         <property name="text">
+          <string>Kod Gönder</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageReset">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Yeni Şifre Belirle&lt;/span&gt;&lt;/p&gt;&lt;p&gt;E-postanıza gelen kodu ve yeni şifrenizi girin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="kodLineEdit">
+         <property name="placeholderText">
+          <string>Doğrulama Kodu (6 Haneli)</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 8px; border-radius: 4px; background-color: #3a3f4b; border: 1px solid #555;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="yeniSifreLineEdit">
+         <property name="placeholderText">
+          <string>Yeni Şifre</string>
+         </property>
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 8px; border-radius: 4px; background-color: #3a3f4b; border: 1px solid #555;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="sifreYenileButon">
+         <property name="text">
+          <string>Şifreyi Yenile</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #28a745; padding: 8px; border-radius: 4px; font-weight: bold;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

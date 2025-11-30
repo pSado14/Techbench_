@@ -1,0 +1,55 @@
+#ifndef NETWORKMANAGER_H
+#define NETWORKMANAGER_H
+
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QObject>
+#include <functional>
+
+class NetworkManager : public QObject {
+  Q_OBJECT
+public:
+  explicit NetworkManager(QObject *parent = nullptr);
+
+  // Kayıt Ol İsteği
+  void
+  registerUser(const QString &username, const QString &password,
+               const QString &email,
+               std::function<void(bool success, QString message)> callback);
+
+  // Giriş Yap İsteği
+  void loginUser(const QString &username, const QString &password,
+                 std::function<void(bool success, QString message)> callback);
+
+  // --- YENİ EKLENEN: Hesap Silme İsteği ---
+  void
+  deleteAccount(const QString &username,
+                std::function<void(bool success, QString message)> callback);
+
+  // Skor Kaydetme İsteği
+  void saveScore(const QString &username, const QString &cpu,
+                 const QString &gpu, const QString &ram, int score,
+                 std::function<void(bool success, QString message)> callback);
+
+  // Rakip Sistemleri Getirme İsteği
+  void getRivals(std::function<void(bool success, QList<QVariantMap> rivals,
+                                    QString message)>
+                     callback);
+
+  // Şifremi Unuttum - Kod Gönderme
+  void sendForgotPasswordCode(
+      const QString &email,
+      std::function<void(bool success, QString message)> callback);
+
+  // Şifre Sıfırlama - Yeni Şifre Belirleme
+  void
+  resetPassword(const QString &email, const QString &code,
+                const QString &newPassword,
+                std::function<void(bool success, QString message)> callback);
+
+private:
+  QNetworkAccessManager *manager;
+  const QString BASE_URL = "http://127.0.0.1:3000"; // Node.js sunucu adresiniz
+};
+
+#endif // NETWORKMANAGER_H

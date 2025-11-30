@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>YardimWidget</class>
+ <widget class="QWidget" name="YardimWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1020</width>
+    <height>620</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QFrame" name="sikca_sorulan_frame">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>680</width>
+     <height>500</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#sikca_sorulan_frame {
+    background-color: #2b2e38;
+    border-radius: 15px;
+    border: 1px solid #3c404d;
+}
+
+QLabel {
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#sss_baslik {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3c404d;
+    margin-bottom: 15px;
+}</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_19">
+    <item>
+     <widget class="QLabel" name="sss_baslik">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Uygulama Hakkında Temel Sorular&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTreeWidget" name="sss_listesi">
+      <property name="styleSheet">
+       <string notr="true">QTreeWidget {
+    background-color: #2b2e38;
+    border: none;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 15px;
+    outline: none;
+}
+
+QTreeWidget::item {
+    padding: 12px;
+    border-bottom: 1px solid #3c404d;
+}
+
+QTreeWidget::item:hover {
+    background-color: #363a45;
+    color: #ffffff;
+}
+
+QTreeWidget::item:selected {
+    background-color: #3c404d;
+    color: #4facfe;
+}
+
+QTreeWidget::branch:has-children:!has-siblings:closed,
+QTreeWidget::branch:closed:has-children:has-siblings {
+    image: url(:/Assets/question.png); /* Placeholder or default arrow if not available, but let's rely on default or simple styling */
+}
+
+QTreeWidget::branch:open:has-children:!has-siblings,
+QTreeWidget::branch:open:has-children:has-siblings  {
+    image: url(:/Assets/question.png);
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #2b2e38;
+    width: 10px;
+    margin: 0px 0px 0px 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #3c404d;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #4facfe;
+}
+
+QScrollBar::add-line:vertical {
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical {
+    height: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}</string>
+   </property>
+      <property name="headerHidden">
+       <bool>true</bool>
+      </property>
+      <property name="animated">
+       <bool>true</bool>
+      </property>
+      <property name="indentation">
+       <number>20</number>
+      </property>
+      <column>
+       <property name="text">
+        <string>Soru - Cevap</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
