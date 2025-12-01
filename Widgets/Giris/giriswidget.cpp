@@ -12,7 +12,7 @@ GirisWidget::GirisWidget(QWidget *parent)
   ui->giris_yap_butonu_sayfa->setStyleSheet(
       "QPushButton { "
       "   background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, "
-      "y2:0, stop:0 #11998e, stop:1 #38ef7d); "
+      "y2:0, stop:0 #4facfe, stop:1 #00f2fe); "
       "   border-radius: 8px; "
       "   color: white; "
       "   padding: 10px 20px; "
@@ -21,7 +21,7 @@ GirisWidget::GirisWidget(QWidget *parent)
       "   border: none; "
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
-      "x1:0, y1:0, x2:1, y2:0, stop:0 #38ef7d, stop:1 #11998e); }");
+      "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
 
   // Modern Blue Gradient for "Kayıt Ol"
   // Transparent Style for "Kayıt Ol" (Like Forgot Password)
@@ -60,22 +60,24 @@ void GirisWidget::on_giris_yap_butonu_sayfa_clicked() {
   qDebug() << "Sunucuya giriş isteği gönderiliyor..." << username;
 
   // --- NODE.JS SUNUCUSUNA GİRİŞ İSTEĞİ ---
-  netManager->loginUser(username, password, [=](bool success, QString message) {
-    if (success) {
-      // --- BAŞARILI ---
-      qDebug() << "Giriş Başarılı!";
+  netManager->loginUser(
+      username, password,
+      [=](bool success, QString message, QVariantMap userData) {
+        if (success) {
+          // --- BAŞARILI ---
+          qDebug() << "Giriş Başarılı!";
 
-      // MainWindow'a sinyal gönderiyoruz ve KULLANICI ADINI da ekliyoruz
-      emit girisBasarili(username);
+          // MainWindow'a sinyal gönderiyoruz ve KULLANICI ADINI da ekliyoruz
+          emit girisBasarili(username, userData);
 
-      // Inputları temizle
-      ui->kullanici_adi_input_sayfa->clear();
-      ui->sifre_input_sayfa->clear();
-    } else {
-      // --- HATA ---
-      QMessageBox::warning(this, "Giriş Başarısız", message);
-    }
-  });
+          // Inputları temizle
+          ui->kullanici_adi_input_sayfa->clear();
+          ui->sifre_input_sayfa->clear();
+        } else {
+          // --- HATA ---
+          QMessageBox::warning(this, "Giriş Başarısız", message);
+        }
+      });
 }
 
 // --- 2. KAYIT OL BUTONU ---

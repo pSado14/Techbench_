@@ -18,8 +18,10 @@ public:
                std::function<void(bool success, QString message)> callback);
 
   // Giriş Yap İsteği
-  void loginUser(const QString &username, const QString &password,
-                 std::function<void(bool success, QString message)> callback);
+  void loginUser(
+      const QString &username, const QString &password,
+      std::function<void(bool success, QString message, QVariantMap userData)>
+          callback);
 
   // --- YENİ EKLENEN: Hesap Silme İsteği ---
   void
@@ -35,6 +37,29 @@ public:
   void getRivals(std::function<void(bool success, QList<QVariantMap> rivals,
                                     QString message)>
                      callback);
+
+  // --- YENİ: Bağış İsteği Oluşturma ---
+  void createDonationRequest(
+      const QString &username, const QString &title, const QString &category,
+      int price, std::function<void(bool success, QString message)> callback);
+
+  // --- YENİ: Bağış İsteklerini Getirme ---
+  void getDonationRequests(
+      std::function<void(bool success, QList<QVariantMap> requests,
+                         QString message)>
+          callback);
+
+  // --- YENİ: Test Geçmişini Getirme ---
+  void
+  getScoreHistory(const QString &username,
+                  std::function<void(bool success, QList<QVariantMap> history,
+                                     QString message)>
+                      callback);
+
+  // --- YENİ: Test Geçmişini Silme ---
+  void deleteScoreHistory(
+      const QString &username,
+      std::function<void(bool success, QString message)> callback);
 
   // Şifremi Unuttum - Kod Gönderme
   void sendForgotPasswordCode(

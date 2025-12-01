@@ -51,6 +51,8 @@ set(PROJECT_SOURCES
         Widgets/Bagis/bagiswidget.cpp
         Widgets/Bagis/bagiswidget.h
         Widgets/Bagis/bagiswidget.ui
+        Widgets/Bagis/bagisistegidialog.cpp
+        Widgets/Bagis/bagisistegidialog.h
         Widgets/Yardim/yardimwidget.cpp
         Widgets/Yardim/yardimwidget.h
         Widgets/Yardim/yardimwidget.ui

@@ -243,6 +243,22 @@ void AnasayfaWidget::setKullaniciBilgileri(const QString &ad) {
   ui->kullanici_adi_label->setText(ad);
 }
 
+void AnasayfaWidget::setSistemBilgileri(const QString &cpu, const QString &gpu,
+                                        const QString &ram) {
+  ui->cpu_model_label->setText(cpu);
+  ui->gpu_model_label->setText(gpu);
+
+  // RAM bilgisini parse edip ekrana basabiliriz veya direkt basabiliriz
+  // Veritabanında "Kingston (16 GB)" gibi tutuluyorsa direkt basmak mantıklı
+  ui->ram_model_label_2->setText(ram);
+
+  // Diğer detayları (Core count, clock speed vs) veritabanında tutmuyorsak "-"
+  // yapabiliriz veya veritabanına bu detayları da ekleyebiliriz. Şimdilik
+  // sadece model isimleri var.
+
+  emit sistemBilgileriGuncellendi(cpu, gpu, ram);
+}
+
 void AnasayfaWidget::on_hesapSilButon_clicked() { emit hesapSilmeTiklandi(); }
 
 void AnasayfaWidget::setupCharts() { updateCharts(0, 0, 0); }

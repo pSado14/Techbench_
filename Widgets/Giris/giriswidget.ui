@@ -94,6 +94,22 @@ QLineEdit:focus {
       </item>
       <item>
        <widget class="QPushButton" name="giris_yap_butonu_sayfa">
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 14px;
+}
+QPushButton:hover {
+    background-color: #0056b3;
+}
+QPushButton:pressed {
+    background-color: #004085;
+}</string>
+        </property>
         <property name="text">
          <string>Giriş Yap</string>
         </property>

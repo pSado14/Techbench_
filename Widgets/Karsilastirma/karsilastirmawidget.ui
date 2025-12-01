@@ -117,7 +117,7 @@ QLineEdit:focus {
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>None</string>
+           <string>Seçilmedi</string>
           </property>
          </widget>
         </item>

@@ -21,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
 
+  // Buton boyutlarını eşitle
+  ui->girisyapbuton->setFixedWidth(115);
+  ui->bagisyapbuton->setFixedWidth(115);
+
   // --- 1. NetworkManager'ı Başlat ---
   netManager = new NetworkManager(this);
 
@@ -40,16 +44,17 @@ MainWindow::MainWindow(QWidget *parent)
   ui->bagisyapbuton->setStyleSheet(
       "QPushButton { "
       "   background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, "
-      "y2:0, stop:0 #4facfe, stop:1 #00f2fe); "
-      "   border-radius: 20px; "
+      "y2:0, stop:0 #11998e, stop:1 #38ef7d); "
+      "   border-radius: 8px; "
       "   color: white; "
-      "   padding: 8px 20px; "
+      "   padding: 6px 15px; "
       "   font-weight: bold; "
-      "   font-size: 14px; "
+      "   font-size: 12px; "
       "   border: none; "
+      "   outline: none; "
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
-      "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
+      "x1:0, y1:0, x2:1, y2:0, stop:0 #38ef7d, stop:1 #11998e); }");
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -106,11 +111,13 @@ void MainWindow::setLoginState(bool loggedIn) {
         "   background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, "
         "y2:0, stop:0 #ff416c, stop:1 #ff4b2b); "
         "   color: white; "
-        "   border-radius: 20px; "
-        "   padding: 8px 20px; "
+        "   border-radius: 8px; "
+        "   padding: 6px 15px; "
         "   text-align: center; "
         "   border: none; "
+        "   outline: none; "
         "   font-weight: bold; "
+        "   font-size: 12px; "
         "}"
         "QPushButton:hover { background-color: qlineargradient(spread:pad, "
         "x1:0, y1:0, x2:1, y2:0, stop:0 #ff4b2b, stop:1 #ff416c); }");
@@ -123,16 +130,18 @@ void MainWindow::setLoginState(bool loggedIn) {
     ui->girisyapbuton->setStyleSheet(
         "QPushButton { "
         "   background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, "
-        "y2:0, stop:0 #11998e, stop:1 #38ef7d); "
+        "y2:0, stop:0 #00c6ff, stop:1 #0072ff); "
         "   color: white; "
-        "   border-radius: 20px; "
-        "   padding: 8px 20px; "
+        "   border-radius: 8px; "
+        "   padding: 6px 15px; "
         "   text-align: center; "
         "   border: none; "
+        "   outline: none; "
         "   font-weight: bold; "
+        "   font-size: 12px; "
         "}"
         "QPushButton:hover { background-color: qlineargradient(spread:pad, "
-        "x1:0, y1:0, x2:1, y2:0, stop:0 #38ef7d, stop:1 #11998e); }");
+        "x1:0, y1:0, x2:1, y2:0, stop:0 #0072ff, stop:1 #00c6ff); }");
 
     qDebug() << "Durum: Çıkış Yapıldı -> Yeşil.";
   }
@@ -152,7 +161,8 @@ void MainWindow::on_girisyapbuton_clicked() {
       m_anasayfa->bilgileriSifirla(); // Bilgileri temizle
       currentUsername = "";           // İsmi unut
       m_karsilastirma->setKullaniciBilgileri(
-          ""); // Karşılaştırma sayfasını sıfırla
+          "");                      // Karşılaştırma sayfasını sıfırla
+      m_bagis->setKullaniciAdi(""); // --- YENİ: Bağış sayfasını sıfırla ---
 
       QMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
       ui->stackedWidget->setCurrentWidget(m_anasayfa);
@@ -210,21 +220,47 @@ void MainWindow::setupMenuButtons() {
           &MainWindow::on_bagisyapbuton_clicked);
 
   // --- SİNYAL BAĞLANTILARI ---
-
   // 1. Giriş Başarılı
-  connect(m_giris, &GirisWidget::girisBasarili, this, [=](QString username) {
-    currentUsername = username; // KULLANICI ADINI KAYDET
+  connect(m_giris, &GirisWidget::girisBasarili, this,
+          [=](QString username, QVariantMap userData) {
+            currentUsername = username; // KULLANICI ADINI KAYDET
 
-    m_anasayfa->setKullaniciBilgileri(username);
-    m_karsilastirma->setKullaniciBilgileri(
-        username); // Karşılaştırma sayfasını güncelle
-    ui->stackedWidget->setCurrentWidget(m_anasayfa);
-    updateButtonStyles(ui->anasayfabuton);
-    setLoginState(true);
+            m_anasayfa->setKullaniciBilgileri(username);
+            m_karsilastirma->setKullaniciBilgileri(username);
+            m_bagis->setKullaniciAdi(username);
 
-    // Giriş yapınca otomatik tara
-    m_anasayfa->taraVeGuncelle();
-  });
+            ui->stackedWidget->setCurrentWidget(m_anasayfa);
+            updateButtonStyles(ui->anasayfabuton);
+            setLoginState(true);
+
+            // Giriş yapınca otomatik tara - İPTAL EDİLDİ (Kullanıcı isteği)
+            // m_anasayfa->taraVeGuncelle();
+
+            // EĞER VERİTABANINDAN GELEN VERİ VARSA ONU KULLAN
+            if (!userData.isEmpty()) {
+              QString cpu = userData["cpu"].toString();
+              QString gpu = userData["gpu"].toString();
+              QString ram = userData["ram"].toString();
+              int score = userData["score"].toInt();
+
+              if (!cpu.isEmpty() && !gpu.isEmpty() && !ram.isEmpty()) {
+                qDebug() << "Veritabanından sistem bilgileri çekildi:" << cpu
+                         << gpu << ram;
+                m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
+              }
+            }
+
+            // --- YENİ: Test Geçmişini Çek ---
+            netManager->getScoreHistory(
+                username,
+                [=](bool success, QList<QVariantMap> history, QString message) {
+                  if (success) {
+                    m_karsilastirma->updateHistoryList(history);
+                  } else {
+                    qDebug() << "Geçmiş çekilemedi:" << message;
+                  }
+                });
+          });
 
   // 2. Anasayfa'daki "Hesabı Sil" butonu bağlantısı
   connect(m_anasayfa, &AnasayfaWidget::hesapSilmeTiklandi, this,
@@ -263,6 +299,16 @@ void MainWindow::setupMenuButtons() {
                           qDebug() << "Rakipler alınamadı:" << message;
                         }
                       });
+
+                      // --- YENİ: Geçmişi de güncelle ---
+                      netManager->getScoreHistory(
+                          currentUsername,
+                          [=](bool success, QList<QVariantMap> history,
+                              QString message) {
+                            if (success) {
+                              m_karsilastirma->updateHistoryList(history);
+                            }
+                          });
                     } else {
                       qDebug() << "Skor kaydedilemedi:" << message;
                     }
@@ -299,6 +345,7 @@ void MainWindow::updateButtonStyles(QPushButton *clickedButton) {
                                "   font-weight: 500; "
                                "   text-align: left; "
                                "   padding-left: 20px; "
+                               "   outline: none; "
                                "}"
                                "QPushButton:hover { "
                                "   background-color: #3c404d; "
@@ -317,6 +364,7 @@ void MainWindow::updateButtonStyles(QPushButton *clickedButton) {
       "   font-weight: bold; "
       "   text-align: left; "
       "   padding-left: 20px; "
+      "   outline: none; "
       "}";
 
   for (QPushButton *button : menuButtons)
@@ -346,12 +394,30 @@ void MainWindow::on_karsilastirmabuton_clicked() {
           qDebug() << "Rakipler alınamadı (Buton Tıklama):" << message;
         }
       });
+
+  // Geçmişi de güncelle
+  if (userIsLoggedIn && !currentUsername.isEmpty()) {
+    netManager->getScoreHistory(
+        currentUsername,
+        [=](bool success, QList<QVariantMap> history, QString message) {
+          if (success) {
+            m_karsilastirma->updateHistoryList(history);
+          }
+        });
+  }
 }
 void MainWindow::on_yardimbuton_clicked() {
   ui->stackedWidget->setCurrentWidget(m_yardim);
   updateButtonStyles(ui->yardimbuton);
 }
 void MainWindow::on_bagisyapbuton_clicked() {
+  if (!userIsLoggedIn) {
+    QMessageBox::warning(this, "Erişim Engellendi",
+                         "Bağış sayfasına erişmek için lütfen giriş yapınız.");
+    ui->stackedWidget->setCurrentWidget(m_giris);
+    updateButtonStyles(nullptr);
+    return;
+  }
   ui->stackedWidget->setCurrentWidget(m_bagis);
   updateButtonStyles(nullptr);
 }

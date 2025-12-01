@@ -3,13 +3,13 @@
 
 #include <QWidget>
 
+#include <QListWidget>
 #include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBarSet>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtCharts/QValueAxis>
-
 
 namespace Ui {
 class KarsilastirmaWidget;
@@ -26,6 +26,8 @@ public:
   void setKullaniciBilgileri(QString username);
   void setSizinPuaniniz(int totalScore);
   void updateRivalsList(const QList<QVariantMap> &rivals);
+  void
+  updateHistoryList(const QList<QVariantMap> &history); // <-- PUBLIC OLMALI
 
   QString getCpu() const { return m_cpu; }
   QString getGpu() const { return m_gpu; }
@@ -34,6 +36,7 @@ public:
 private slots:
   void on_karsilastir_buton_clicked();
   void on_arama_kutusu_textChanged(const QString &arg1);
+  void on_gecmisi_temizle_buton_clicked(); // <-- YENİ
 
 private:
   Ui::KarsilastirmaWidget *ui;
@@ -56,6 +59,10 @@ private:
   void updateSizinSisteminizUI();
   void setupComparisonChart();
   void updateChart(int rivalScore);
+  void setupHistoryList(); // <-- YENİ
+
+  // UI Elements created programmatically
+  QListWidget *m_historyList = nullptr;
 };
 
 #endif // KARSILASTIRMAWIDGET_H

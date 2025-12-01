@@ -17,6 +17,8 @@ public:
 
   // MainWindow'dan çağrılacak ve kullanıcı adını ekrana basacak
   void setKullaniciBilgileri(const QString &ad);
+  void setSistemBilgileri(const QString &cpu, const QString &gpu,
+                          const QString &ram); // <-- YENİ
   void taraVeGuncelle();
   void setPuanlar(int cpuScore, int gpuScore, int ramScore);
   void bilgileriSifirla();

@@ -60,8 +60,9 @@ void NetworkManager::registerUser(const QString &username,
 }
 
 // --- GİRİŞ İŞLEMİ ---
-void NetworkManager::loginUser(const QString &username, const QString &password,
-                               std::function<void(bool, QString)> callback) {
+void NetworkManager::loginUser(
+    const QString &username, const QString &password,
+    std::function<void(bool, QString, QVariantMap)> callback) {
   QUrl url(BASE_URL + "/login"); // Node.js'deki endpoint
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -79,11 +80,16 @@ void NetworkManager::loginUser(const QString &username, const QString &password,
 
     bool success = false;
     QString message = "Giriş Hatası";
+    QVariantMap userData;
 
     if (reply->error() == QNetworkReply::NoError) {
       if (!jsonObject.isEmpty()) {
         success = jsonObject["success"].toBool();
         message = jsonObject["message"].toString();
+
+        if (success && jsonObject.contains("user")) {
+          userData = jsonObject["user"].toObject().toVariantMap();
+        }
       } else {
         success = true;
         message = "Giriş Başarılı";
@@ -96,7 +102,7 @@ void NetworkManager::loginUser(const QString &username, const QString &password,
       }
     }
 
-    callback(success, message);
+    callback(success, message, userData);
     reply->deleteLater();
   });
 }
@@ -232,6 +238,173 @@ void NetworkManager::getRivals(
     }
 
     callback(success, rivalsList, message);
+    reply->deleteLater();
+  });
+}
+
+// --- BAĞIŞ İSTEĞİ OLUŞTURMA ---
+void NetworkManager::createDonationRequest(
+    const QString &username, const QString &title, const QString &category,
+    int price, std::function<void(bool, QString)> callback) {
+  QUrl url(BASE_URL + "/create-donation-request");
+  QNetworkRequest request(url);
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  QJsonObject json;
+  json["username"] = username;
+  json["title"] = title;
+  json["category"] = category;
+  json["price"] = price;
+
+  QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+    QJsonObject jsonObject = jsonResponse.object();
+
+    bool success = false;
+    QString message = "Hata oluştu";
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (!jsonObject.isEmpty()) {
+        success = jsonObject["success"].toBool();
+        message = jsonObject["message"].toString();
+      } else {
+        success = true;
+        message = "İstek oluşturuldu";
+      }
+    } else {
+      if (!jsonObject.isEmpty()) {
+        message = jsonObject["message"].toString();
+      } else {
+        message = "Bağlantı Hatası: " + reply->errorString();
+      }
+    }
+
+    callback(success, message);
+    reply->deleteLater();
+  });
+}
+
+// --- BAĞIŞ İSTEKLERİNİ GETİRME ---
+void NetworkManager::getDonationRequests(
+    std::function<void(bool, QList<QVariantMap>, QString)> callback) {
+  QUrl url(BASE_URL + "/donation-requests");
+  QNetworkRequest request(url);
+
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+
+    bool success = false;
+    QString message = "Veri Çekme Hatası";
+    QList<QVariantMap> requestsList;
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (jsonResponse.isArray()) {
+        QJsonArray jsonArray = jsonResponse.array();
+        for (const QJsonValue &value : jsonArray) {
+          requestsList.append(value.toObject().toVariantMap());
+        }
+        success = true;
+        message = "İstekler Getirildi";
+      } else if (jsonResponse.isObject()) {
+        QJsonObject obj = jsonResponse.object();
+        if (obj.contains("success") && !obj["success"].toBool()) {
+          success = false;
+          message = obj["message"].toString();
+        }
+      }
+    } else {
+      message = "Bağlantı Hatası: " + reply->errorString();
+    }
+
+    callback(success, requestsList, message);
+    reply->deleteLater();
+  });
+}
+
+// --- TEST GEÇMİŞİNİ GETİRME ---
+void NetworkManager::getScoreHistory(
+    const QString &username,
+    std::function<void(bool, QList<QVariantMap>, QString)> callback) {
+  QUrl url(BASE_URL + "/score-history?username=" + username);
+  QNetworkRequest request(url);
+
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+
+    bool success = false;
+    QString message = "Veri Çekme Hatası";
+    QList<QVariantMap> historyList;
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (jsonResponse.isArray()) {
+        QJsonArray jsonArray = jsonResponse.array();
+        for (const QJsonValue &value : jsonArray) {
+          historyList.append(value.toObject().toVariantMap());
+        }
+        success = true;
+        message = "Geçmiş Getirildi";
+      } else if (jsonResponse.isObject()) {
+        QJsonObject obj = jsonResponse.object();
+        if (obj.contains("success") && !obj["success"].toBool()) {
+          success = false;
+          message = obj["message"].toString();
+        }
+      }
+    } else {
+      message = "Bağlantı Hatası: " + reply->errorString();
+    }
+
+    callback(success, historyList, message);
+    reply->deleteLater();
+  });
+}
+
+// --- TEST GEÇMİŞİNİ SİLME ---
+void NetworkManager::deleteScoreHistory(
+    const QString &username, std::function<void(bool, QString)> callback) {
+  QUrl url(BASE_URL + "/delete-history");
+  QNetworkRequest request(url);
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  QJsonObject json;
+  json["username"] = username;
+
+  QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+    QJsonObject jsonObject = jsonResponse.object();
+
+    bool success = false;
+    QString message = "Hata oluştu";
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (!jsonObject.isEmpty()) {
+        success = jsonObject["success"].toBool();
+        message = jsonObject["message"].toString();
+      } else {
+        success = true;
+        message = "Geçmiş silindi";
+      }
+    } else {
+      if (!jsonObject.isEmpty()) {
+        message = jsonObject["message"].toString();
+      } else {
+        message = "Bağlantı Hatası: " + reply->errorString();
+      }
+    }
+
+    callback(success, message);
     reply->deleteLater();
   });
 }
