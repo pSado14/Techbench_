@@ -1,4 +1,5 @@
 #include "anasayfawidget.h"
+#include "networkmanager.h"
 #include "ui_anasayfawidget.h"
 #include <QDebug>
 #include <QMessageBox>
@@ -22,6 +23,14 @@ AnasayfaWidget::AnasayfaWidget(QWidget *parent)
 
   setupCharts(); // <-- Charts kurulumu
   bilgileriSifirla();
+
+  // Varsayılan olarak laptop bilgisini gizle
+  if (ui->laptop_info_frame)
+    ui->laptop_info_frame->setVisible(false);
+
+  // Fiyat kontrol sinyalini bağla
+  connect(this, &AnasayfaWidget::priceCheckRequested, this,
+          &AnasayfaWidget::checkPrice);
 }
 
 AnasayfaWidget::~AnasayfaWidget() { delete ui; }
@@ -257,6 +266,199 @@ void AnasayfaWidget::setSistemBilgileri(const QString &cpu, const QString &gpu,
   // sadece model isimleri var.
 
   emit sistemBilgileriGuncellendi(cpu, gpu, ram);
+
+  emit sistemBilgileriGuncellendi(cpu, gpu, ram);
+
+  // --- LAPTOP VS DESKTOP KONTROLÜ ---
+  QString chassisType =
+      getHardwareInfo("wmic", {"systemenclosure", "get", "chassistypes"});
+  // Chassis Types: 8, 9, 10, 11, 12, 14, 18, 21, 30, 31, 32 -> Laptop/Portable
+  bool isLaptop = false;
+  if (chassisType.contains("8") || chassisType.contains("9") ||
+      chassisType.contains("10") || chassisType.contains("11") ||
+      chassisType.contains("18") || chassisType.contains("21") ||
+      chassisType.contains("30") || chassisType.contains("31") ||
+      chassisType.contains("32")) {
+    isLaptop = true;
+  }
+
+  if (isLaptop) {
+    if (ui->laptop_info_frame)
+      ui->laptop_info_frame->setVisible(true);
+
+    QString laptopModel = getHardwareInfo("wmic", {"csproduct", "get", "name"});
+
+    if (ui->laptop_model_label)
+      ui->laptop_model_label->setText(laptopModel);
+
+    // Laptop ise sadece model ismini arat
+    if (laptopModel != "0" && !laptopModel.isEmpty()) {
+      emit priceCheckRequested(laptopModel, "LAPTOP");
+
+      // UI Hazırlığı
+      if (ui->cprice_label)
+        ui->cprice_label->setText("Aranıyor...");
+      if (ui->g_price_label)
+        ui->g_price_label->setText(
+            "-"); // Laptopta ayrı GPU fiyatı olmaz genelde
+      if (ui->r_price_label)
+        ui->r_price_label->setText("-");
+      if (ui->ram_price_label)
+        ui->ram_price_label->setText("Laptop Fiyatı:");
+    }
+  } else {
+    if (ui->laptop_info_frame)
+      ui->laptop_info_frame->setVisible(false);
+
+    // Masaüstü ise parça parça arat
+    if (cpu != "Taranmadı" && cpu != "-")
+      emit priceCheckRequested(cpu, "CPU");
+    if (gpu != "Taranmadı" && gpu != "-")
+      emit priceCheckRequested(gpu, "GPU");
+    if (ram != "Taranmadı" && ram != "-")
+      emit priceCheckRequested(ram, "RAM");
+  }
+}
+
+void AnasayfaWidget::setPrice(const QString &type, const QString &price,
+                              const QString &source) {
+  QString priceText = price;
+  if (!source.isEmpty()) {
+    priceText += " (" + source + ")";
+  }
+
+  if (type == "CPU") {
+    if (ui->cprice_label)
+      ui->cprice_label->setText(priceText);
+  } else if (type == "GPU") {
+    if (ui->g_price_label)
+      ui->g_price_label->setText(priceText);
+  } else if (type == "RAM") {
+    if (ui->r_price_label)
+      ui->r_price_label->setText(priceText);
+  } else if (type == "LAPTOP") {
+    // Laptop fiyatını CPU label'ına veya özel bir yere yazalım
+    // Şimdilik RAM label'ının başlığını "Laptop Fiyatı" yaptık, değerini de
+    // oraya yazalım
+    if (ui->r_price_label)
+      ui->r_price_label->setText(priceText);
+  }
+}
+
+void AnasayfaWidget::setToplamPuan(int score) {
+  // Sadece toplam puanı güncelle, diğerlerini sıfırla
+  m_cpuScore = 0;
+  m_gpuScore = 0;
+  m_ramScore = 0;
+
+  // UI'da tekli puanları temizle
+  ui->cpu_score_label->setText("-");
+  ui->gpu_score_label->setText("-");
+  ui->ram_score_label_2->setText("-");
+
+  // Grafikleri temizle (0,0,0 ile çağırınca boş grafik çizer)
+  updateCharts(0, 0, 0);
+
+  // Ancak Gauge Chart (Genel Skor) için özel işlem yapmamız lazım.
+  // updateCharts fonksiyonu içinde gauge chart da güncelleniyor ama
+  // cpu+gpu+ram toplamına göre.
+  // Bu yüzden updateCharts fonksiyonunu modifiye etmek yerine,
+  // buraya özel bir gauge güncelleme kodu ekleyebiliriz veya
+  // updateCharts'a opsiyonel parametre ekleyebiliriz.
+  // En temiz yol: updateCharts fonksiyonunu "totalScoreOverride" parametresi
+  // ile güncellemek. Ama şimdilik kodu kopyalayıp sadece gauge kısmını buraya
+  // alalım, çünkü updateCharts çok iş yapıyor.
+
+  // --- GAUGE CHART GÜNCELLEME (Kopyalanmış Mantık) ---
+  int totalScore = score;
+  QString statusText;
+  QColor statusColor;
+
+  if (totalScore > 50000) {
+    statusText = "Efsanevi";
+    statusColor = QColor("#8e44ad");
+  } else if (totalScore > 40000) {
+    statusText = "Mükemmel";
+    statusColor = QColor("#2ecc71");
+  } else if (totalScore > 30000) {
+    statusText = "Çok İyi";
+    statusColor = QColor("#3498db");
+  } else if (totalScore > 20000) {
+    statusText = "İyi";
+    statusColor = QColor("#f1c40f");
+  } else if (totalScore > 10000) {
+    statusText = "Orta";
+    statusColor = QColor("#e67e22");
+  } else {
+    statusText = "Geliştirilmeli";
+    statusColor = QColor("#e74c3c");
+  }
+
+  if (ui->general_score_status_label) {
+    ui->general_score_status_label->setText(
+        QString("Genel Performans: <span style='color:%1; "
+                "font-weight:bold;'>%2</span>")
+            .arg(statusColor.name())
+            .arg(statusText));
+  }
+
+  if (ui->gauge_chart_container) {
+    if (!ui->gauge_chart_container->layout()) {
+      new QVBoxLayout(ui->gauge_chart_container);
+    }
+
+    QLayoutItem *item;
+    while ((item = ui->gauge_chart_container->layout()->takeAt(0))) {
+      delete item->widget();
+      delete item;
+    }
+
+    QChart *gaugeChart = new QChart();
+    gaugeChart->setBackgroundVisible(false);
+    gaugeChart->setMargins(QMargins(0, 0, 0, 0));
+    gaugeChart->legend()->setVisible(false);
+
+    QPieSeries *gaugeSeries = new QPieSeries();
+    gaugeSeries->setHoleSize(0.85);
+    gaugeSeries->setPieSize(0.90);
+
+    QPieSlice *scoreSlice = gaugeSeries->append("", totalScore);
+    scoreSlice->setColor(statusColor);
+    scoreSlice->setBorderColor(statusColor);
+    scoreSlice->setLabelVisible(false);
+
+    int maxTotal = 60000;
+    int remaining = maxTotal - totalScore;
+    if (remaining < 0)
+      remaining = 0;
+
+    QPieSlice *emptySlice = gaugeSeries->append("", remaining);
+    emptySlice->setColor(QColor("#444"));
+    emptySlice->setBorderColor(QColor("#444"));
+    emptySlice->setLabelVisible(false);
+
+    gaugeChart->addSeries(gaugeSeries);
+
+    QChartView *gaugeView = new QChartView(gaugeChart);
+    gaugeView->setRenderHint(QPainter::Antialiasing);
+    gaugeView->setStyleSheet("background: transparent;");
+
+    QLabel *centerLabel = new QLabel(QString::number(totalScore), gaugeView);
+    centerLabel->setStyleSheet("color: white; font-size: 24pt; font-weight: "
+                               "bold; background: transparent;");
+    centerLabel->setAlignment(Qt::AlignCenter);
+    centerLabel->resize(200, 100);
+    centerLabel->move(50, 25);
+
+    ui->gauge_chart_container->layout()->addWidget(gaugeView);
+
+    QVBoxLayout *overlayLayout = new QVBoxLayout(gaugeView);
+    overlayLayout->addWidget(centerLabel);
+    overlayLayout->setAlignment(centerLabel, Qt::AlignCenter);
+  }
+
+  // Sinyal Gönder
+  emit puanlarGuncellendi(totalScore);
 }
 
 void AnasayfaWidget::on_hesapSilButon_clicked() { emit hesapSilmeTiklandi(); }
@@ -484,4 +686,20 @@ void AnasayfaWidget::setPuanlar(int cpuScore, int gpuScore, int ramScore) {
   // Toplam puanı hesapla ve sinyal gönder
   int totalScore = m_cpuScore + m_gpuScore + m_ramScore;
   emit puanlarGuncellendi(totalScore);
+}
+
+void AnasayfaWidget::checkPrice(const QString &productName,
+                                const QString &type) {
+  // Kullanıcıya geri bildirim ver
+  setPrice(type, "Aranıyor...", "");
+
+  NetworkManager *nm = new NetworkManager(this);
+  nm->getPrice(productName, [=](bool success, QString price, QString source) {
+    if (success) {
+      setPrice(type, price, source);
+    } else {
+      setPrice(type, "Bulunamadı", "");
+    }
+    nm->deleteLater();
+  });
 }

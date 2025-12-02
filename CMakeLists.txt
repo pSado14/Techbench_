@@ -59,6 +59,8 @@ set(PROJECT_SOURCES
         Network/networkmanager.cpp
         Network/networkmanager.h
         Network/networkmanager.ui
+        Network/pricefetcher.cpp
+        Network/pricefetcher.h
         Widgets/Benchmark/benchmarkworker.cpp
         Widgets/Benchmark/benchmarkworker.h
         resources.qrc

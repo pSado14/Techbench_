@@ -493,3 +493,34 @@ void NetworkManager::resetPassword(
     reply->deleteLater();
   });
 }
+
+// --- FİYAT ÇEKME ---
+#include "pricefetcher.h"
+
+// ... (Existing includes)
+
+// --- FİYAT ÇEKME ---
+void NetworkManager::getPrice(
+    const QString &productName,
+    std::function<void(bool, QString, QString)> callback) {
+
+  // PriceFetcher nesnesini oluştur
+  // Not: Bu nesne işi bitince silinmeli. QObject tree veya deleteLater ile.
+  // Burada basitçe parent olarak 'this' veriyoruz ama asenkron olduğu için
+  // callback içinde deleteLater diyemeyiz çünkü PriceFetcher sinyal atıyor.
+  // En temizi: PriceFetcher'ı member olarak tutmak veya burada oluşturup
+  // işi bitince kendini silmesini sağlamak.
+
+  PriceFetcher *fetcher = new PriceFetcher(this);
+
+  connect(fetcher, &PriceFetcher::priceFound, [=](QString price) {
+    // Callback'i çağır
+    // Source şimdilik "Google" veya "Web" diyebiliriz
+    callback(true, price, "Web");
+
+    // Fetcher'ı temizle
+    fetcher->deleteLater();
+  });
+
+  fetcher->searchPrice(productName);
+}

@@ -174,9 +174,23 @@ void KarsilastirmaWidget::updateRivalsList(const QList<QVariantMap> &rivals) {
     QListWidgetItem *item = new QListWidgetItem(itemText);
     // Tüm veriyi item içine sakla (Parsing ile uğraşmamak için)
     item->setData(Qt::UserRole, rival);
-
-    ui->sistem_listesi->addItem(item);
+    ui->sistem_listesi->addItem(item); // <-- EKLENDİ
   }
+}
+
+void KarsilastirmaWidget::showLoginWarning() {
+  if (!ui->sistem_listesi)
+    return;
+
+  ui->sistem_listesi->clear();
+
+  QListWidgetItem *item =
+      new QListWidgetItem("Rakipleri görmek için lütfen giriş yapınız.");
+  item->setTextAlignment(Qt::AlignCenter);
+  // Kullanıcının tıklamasını engellemek için flags ayarlayabiliriz
+  item->setFlags(Qt::ItemIsEnabled);
+
+  ui->sistem_listesi->addItem(item);
 }
 
 void KarsilastirmaWidget::on_karsilastir_buton_clicked() {

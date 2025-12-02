@@ -200,31 +200,7 @@ QListWidget::item:selected {
       <property name="styleSheet">
        <string notr="true">background-color: transparent; border: none;</string>
       </property>
-      <item>
-       <property name="text">
-        <string>2024-07-25: - 14500 pts</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>2024-07-25: - 14200 pts</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>2024-07-25: - 14200 pts</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>2024-07-25: - 14200 pts</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>2024-07-25: - 28000 pts</string>
-       </property>
-      </item>
+
      </widget>
     </item>
    </layout>

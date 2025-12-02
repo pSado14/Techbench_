@@ -161,7 +161,9 @@ void MainWindow::on_girisyapbuton_clicked() {
       m_anasayfa->bilgileriSifirla(); // Bilgileri temizle
       currentUsername = "";           // İsmi unut
       m_karsilastirma->setKullaniciBilgileri(
-          "");                      // Karşılaştırma sayfasını sıfırla
+          "");                             // Karşılaştırma sayfasını sıfırla
+      m_karsilastirma->showLoginWarning(); // <-- YENİ: Çıkış yapınca listeyi
+                                           // temizle ve uyar
       m_bagis->setKullaniciAdi(""); // --- YENİ: Bağış sayfasını sıfırla ---
 
       QMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
@@ -221,49 +223,67 @@ void MainWindow::setupMenuButtons() {
 
   // --- SİNYAL BAĞLANTILARI ---
   // 1. Giriş Başarılı
-  connect(m_giris, &GirisWidget::girisBasarili, this,
-          [=](QString username, QVariantMap userData) {
-            currentUsername = username; // KULLANICI ADINI KAYDET
+  connect(
+      m_giris, &GirisWidget::girisBasarili, this,
+      [=](QString username, QVariantMap userData) {
+        currentUsername = username; // KULLANICI ADINI KAYDET
 
-            m_anasayfa->setKullaniciBilgileri(username);
-            m_karsilastirma->setKullaniciBilgileri(username);
-            m_bagis->setKullaniciAdi(username);
+        m_anasayfa->setKullaniciBilgileri(username);
+        m_karsilastirma->setKullaniciBilgileri(username);
+        m_bagis->setKullaniciAdi(username);
 
-            ui->stackedWidget->setCurrentWidget(m_anasayfa);
-            updateButtonStyles(ui->anasayfabuton);
-            setLoginState(true);
+        ui->stackedWidget->setCurrentWidget(m_anasayfa);
+        updateButtonStyles(ui->anasayfabuton);
+        setLoginState(true);
 
-            // Giriş yapınca otomatik tara - İPTAL EDİLDİ (Kullanıcı isteği)
-            // m_anasayfa->taraVeGuncelle();
+        // Giriş yapınca otomatik tara - İPTAL EDİLDİ (Kullanıcı isteği)
+        // m_anasayfa->taraVeGuncelle();
 
-            // EĞER VERİTABANINDAN GELEN VERİ VARSA ONU KULLAN
-            if (!userData.isEmpty()) {
-              QString cpu = userData["cpu"].toString();
-              QString gpu = userData["gpu"].toString();
-              QString ram = userData["ram"].toString();
-              int score = userData["score"].toInt();
+        // EĞER VERİTABANINDAN GELEN VERİ VARSA ONU KULLAN
+        if (!userData.isEmpty()) {
+          QString cpu = userData["cpu"].toString();
+          QString gpu = userData["gpu"].toString();
+          QString ram = userData["ram"].toString();
+          int score = userData["score"].toInt();
 
-              if (!cpu.isEmpty() && !gpu.isEmpty() && !ram.isEmpty()) {
-                qDebug() << "Veritabanından sistem bilgileri çekildi:" << cpu
-                         << gpu << ram;
-                m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
+          qDebug() << "Login UserData Content:";
+          qDebug() << "  CPU:" << cpu;
+          qDebug() << "  GPU:" << gpu;
+          qDebug() << "  RAM:" << ram;
+          qDebug() << "  Score:" << score;
+
+          if (!cpu.isEmpty() && !gpu.isEmpty() && !ram.isEmpty()) {
+            qDebug() << "Veritabanından sistem bilgileri çekildi:" << cpu << gpu
+                     << ram << "Skor:" << score;
+
+            // Anasayfa'yı güncelle
+            m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
+            m_anasayfa->setToplamPuan(score); // <-- YENİ: Toplam puanı ayarla
+
+            // Karşılaştırma Merkezi'ni güncelle
+            m_karsilastirma->setSizinSisteminiz(cpu, gpu, ram);
+            m_karsilastirma->setSizinPuaniniz(score); // <-- YENİ: Puanı ayarla
+          } else {
+            qDebug() << "Sistem bilgileri eksik, arayüz güncellenmedi.";
+          }
+        } else {
+          qDebug() << "UserData is empty!";
+        }
+
+        // --- YENİ: Test Geçmişini Çek ---
+        netManager->getScoreHistory(
+            username,
+            [=](bool success, QList<QVariantMap> history, QString message) {
+              if (success) {
+                m_benchmark->updateHistoryList(history); // <-- GÜNCELLENDİ
+              } else {
+                qDebug() << "Geçmiş çekilemedi:" << message;
               }
-            }
+            });
 
-            // --- YENİ: Test Geçmişini Çek ---
-            netManager->getScoreHistory(
-                username,
-                [=](bool success, QList<QVariantMap> history, QString message) {
-                  if (success) {
-                    m_benchmark->updateHistoryList(history); // <-- GÜNCELLENDİ
-                  } else {
-                    qDebug() << "Geçmiş çekilemedi:" << message;
-                  }
-                });
-
-            // Benchmark widget'a kullanıcı adını bildir (Silme işlemi için)
-            m_benchmark->setUsername(username);
-          });
+        // Benchmark widget'a kullanıcı adını bildir (Silme işlemi için)
+        m_benchmark->setUsername(username);
+      });
 
   // 2. Anasayfa'daki "Hesabı Sil" butonu bağlantısı
   connect(m_anasayfa, &AnasayfaWidget::hesapSilmeTiklandi, this,
@@ -304,13 +324,13 @@ void MainWindow::setupMenuButtons() {
                       });
 
                       // --- YENİ: Geçmişi de güncelle ---
+                      // --- YENİ: Geçmişi de güncelle ---
                       netManager->getScoreHistory(
                           currentUsername,
                           [=](bool success, QList<QVariantMap> history,
                               QString message) {
                             if (success) {
-                              m_benchmark->updateHistoryList(
-                                  history); // <-- GÜNCELLENDİ
+                              m_benchmark->updateHistoryList(history);
                             }
                           });
                     } else {
@@ -318,6 +338,19 @@ void MainWindow::setupMenuButtons() {
                     }
                   });
             }
+          });
+
+  // 4. Fiyat Sorgulama
+  connect(m_anasayfa, &AnasayfaWidget::priceCheckRequested, this,
+          [=](QString componentName, QString type) {
+            netManager->getPrice(componentName, [=](bool success, QString price,
+                                                    QString source) {
+              if (success) {
+                m_anasayfa->setPrice(type, price, source);
+              } else {
+                m_anasayfa->setPrice(type, "Bulunamadı", "");
+              }
+            });
           });
 
   connect(m_benchmark, &BenchmarkWidget::testBitti, m_anasayfa,
@@ -358,7 +391,8 @@ void MainWindow::updateButtonStyles(QPushButton *clickedButton) {
 
   const QString selectedStyle =
       "QPushButton { "
-      "   background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, "
+      "   background-color: qlineargradient(spread:pad, x1:0, "
+      "y1:0, x2:1, "
       "y2:0, stop:0 #4facfe, stop:1 #00f2fe); "
       "   border: none; "
       "   border-radius: 8px; "
@@ -387,14 +421,23 @@ void MainWindow::on_karsilastirmabuton_clicked() {
   updateButtonStyles(ui->karsilastirmabuton);
 
   // Sayfa açılınca listeyi güncelle
-  netManager->getRivals(
-      [=](bool success, QList<QVariantMap> rivals, QString message) {
-        if (success) {
-          m_karsilastirma->updateRivalsList(rivals);
-        } else {
-          qDebug() << "Rakipler alınamadı (Buton Tıklama):" << message;
-        }
-      });
+  if (userIsLoggedIn) {
+    qDebug() << "Karsilastirma butonu tiklandi. Kullanici giris yapmis. "
+                "Rakipler isteniyor...";
+    netManager->getRivals(
+        [=](bool success, QList<QVariantMap> rivals, QString message) {
+          if (success) {
+            qDebug() << "Rakipler basariyla alindi. Sayi:" << rivals.size();
+            m_karsilastirma->updateRivalsList(rivals);
+          } else {
+            qDebug() << "Rakipler alınamadı (Buton Tıklama):" << message;
+          }
+        });
+  } else {
+    qDebug() << "Karsilastirma butonu tiklandi. Kullanici giris "
+                "YAPMAMIS.";
+    m_karsilastirma->showLoginWarning();
+  }
 
   // Geçmişi de güncelle
   if (userIsLoggedIn && !currentUsername.isEmpty()) {
@@ -402,8 +445,8 @@ void MainWindow::on_karsilastirmabuton_clicked() {
         currentUsername,
         [=](bool success, QList<QVariantMap> history, QString message) {
           if (success) {
-            // m_karsilastirma->updateHistoryList(history); // ARTIK BURADA
-            // DEĞİL
+            // m_karsilastirma->updateHistoryList(history);
+            // // ARTIK BURADA DEĞİL
           }
         });
   }

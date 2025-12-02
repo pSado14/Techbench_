@@ -18,27 +18,28 @@ public:
   // MainWindow'dan çağrılacak ve kullanıcı adını ekrana basacak
   void setKullaniciBilgileri(const QString &ad);
   void setSistemBilgileri(const QString &cpu, const QString &gpu,
-                          const QString &ram); // <-- YENİ
+                          const QString &ram);
+  void setPrice(const QString &type, const QString &price,
+                const QString &source);
+  void setToplamPuan(int score);
   void taraVeGuncelle();
   void setPuanlar(int cpuScore, int gpuScore, int ramScore);
   void bilgileriSifirla();
+  void checkPrice(const QString &productName, const QString &type);
 
 signals:
   void hesapSilmeTiklandi();
+  void priceCheckRequested(QString componentName, QString type);
   void sistemBilgileriGuncellendi(QString cpu, QString gpu, QString ram);
   void puanlarGuncellendi(int totalScore);
 
 private slots:
-  void on_hesapSilButon_clicked();
   void on_sistemibilgilerinitarabuton_clicked();
+  void on_hesapSilButon_clicked();
 
 private:
   Ui::AnasayfaWidget *ui;
-
-  // Donanım bilgisini çeken yardımcı fonksiyon
   QString getHardwareInfo(const QString &cmd, const QStringList &args);
-
-  // Charts
   void setupCharts();
   void updateCharts(int cpuScore, int gpuScore, int ramScore);
 

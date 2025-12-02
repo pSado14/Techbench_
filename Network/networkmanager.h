@@ -4,7 +4,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
+#include <QVariantMap>
 #include <functional>
+
 
 class NetworkManager : public QObject {
   Q_OBJECT
@@ -71,6 +73,11 @@ public:
   resetPassword(const QString &email, const QString &code,
                 const QString &newPassword,
                 std::function<void(bool success, QString message)> callback);
+
+  // --- YENİ: Parça Fiyatı Getirme ---
+  void getPrice(const QString &productName,
+                std::function<void(bool success, QString price, QString source)>
+                    callback);
 
 private:
   QNetworkAccessManager *manager;

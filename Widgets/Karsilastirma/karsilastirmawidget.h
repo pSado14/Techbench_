@@ -26,6 +26,7 @@ public:
   void setKullaniciBilgileri(QString username);
   void setSizinPuaniniz(int totalScore);
   void updateRivalsList(const QList<QVariantMap> &rivals);
+  void showLoginWarning(); // <-- YENİ
 
   QString getCpu() const { return m_cpu; }
   QString getGpu() const { return m_gpu; }
