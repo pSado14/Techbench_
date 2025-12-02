@@ -1,6 +1,11 @@
 #include "karsilastirmawidget.h"
+#include "../../Network/networkmanager.h"
 #include "ui_karsilastirmawidget.h"
 #include <QDebug>
+#include <QListWidgetItem>
+#include <QMap>
+#include <QMessageBox>
+#include <QVariant>
 
 KarsilastirmaWidget::KarsilastirmaWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::KarsilastirmaWidget) {
@@ -26,99 +31,11 @@ KarsilastirmaWidget::KarsilastirmaWidget(QWidget *parent)
   ui->rakip_puan_deger->setText("0 pts");
 
   setupComparisonChart();
-  setupHistoryList();        // <-- YENİ
+
   updateSizinSisteminizUI(); // Başlangıç durumunu ayarla
 }
 
 KarsilastirmaWidget::~KarsilastirmaWidget() { delete ui; }
-
-void KarsilastirmaWidget::setupHistoryList() {
-  // Detaylı Sonuçlar Frame'inin layout'unu al
-  QVBoxLayout *layout =
-      qobject_cast<QVBoxLayout *>(ui->detayli_sonuclar_frame->layout());
-  if (!layout)
-    return;
-
-  // Başlık
-  QLabel *historyLabel = new QLabel("Sonuç Geçmişi");
-  historyLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: "
-                              "white; margin-top: 20px; margin-bottom: 5px;");
-  layout->addWidget(historyLabel);
-
-  // Liste
-  m_historyList = new QListWidget();
-  m_historyList->setStyleSheet(
-      "QListWidget { background-color: #2b2e38; border: none; color: #e0e0e0; }"
-      "QListWidget::item { padding: 8px; border-bottom: 1px solid #3c404d; }"
-      "QListWidget::item:hover { background-color: #363a45; }");
-  m_historyList->setFixedHeight(200); // Yükseklik sınırı
-  layout->addWidget(m_historyList);
-
-  // Geçmişi Temizle Butonu
-  QPushButton *clearHistoryBtn = new QPushButton("Geçmişi Temizle");
-  clearHistoryBtn->setStyleSheet(
-      "QPushButton { "
-      "   background-color: #dc3545; "
-      "   border-radius: 5px; "
-      "   color: white; "
-      "   padding: 5px 10px; "
-      "   font-weight: bold; "
-      "   border: none; "
-      "   margin-top: 5px; "
-      "}"
-      "QPushButton:hover { background-color: #c82333; }");
-  layout->addWidget(clearHistoryBtn);
-
-  connect(clearHistoryBtn, &QPushButton::clicked, this,
-          &KarsilastirmaWidget::on_gecmisi_temizle_buton_clicked);
-}
-
-void KarsilastirmaWidget::updateHistoryList(const QList<QVariantMap> &history) {
-  if (!m_historyList)
-    return;
-  m_historyList->clear();
-
-  for (const QVariantMap &entry : history) {
-    QString date = entry["created_at"].toDateTime().toString("yyyy-MM-dd");
-    // Eğer tarih string geliyorsa (ISO format), dönüşüm gerekebilir.
-    // Backend TIMESTAMP gönderiyor, genelde string gelir.
-    QString dateStr = entry["created_at"].toString();
-    if (dateStr.contains("T"))
-      dateStr = dateStr.split("T")[0]; // Basit parse
-
-    int score = entry["score"].toInt();
-
-    QString itemText = QString("%1: - %2 pts").arg(dateStr).arg(score);
-    m_historyList->addItem(itemText);
-  }
-}
-
-void KarsilastirmaWidget::on_gecmisi_temizle_buton_clicked() {
-  if (m_username.isEmpty()) {
-    QMessageBox::warning(this, "Hata", "Önce giriş yapmalısınız.");
-    return;
-  }
-
-  QMessageBox::StandardButton reply;
-  reply = QMessageBox::question(
-      this, "Geçmişi Sil",
-      "Tüm test geçmişinizi silmek istediğinize emin misiniz?",
-      QMessageBox::Yes | QMessageBox::No);
-  if (reply == QMessageBox::No)
-    return;
-
-  NetworkManager *nm = new NetworkManager(this);
-  nm->deleteScoreHistory(m_username, [this, nm](bool success, QString message) {
-    if (success) {
-      QMessageBox::information(this, "Başarılı", message);
-      if (m_historyList)
-        m_historyList->clear(); // Listeyi temizle
-    } else {
-      QMessageBox::critical(this, "Hata", message);
-    }
-    nm->deleteLater();
-  });
-}
 
 void KarsilastirmaWidget::setupComparisonChart() {
   m_series = new QBarSeries();

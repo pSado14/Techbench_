@@ -255,11 +255,14 @@ void MainWindow::setupMenuButtons() {
                 username,
                 [=](bool success, QList<QVariantMap> history, QString message) {
                   if (success) {
-                    m_karsilastirma->updateHistoryList(history);
+                    m_benchmark->updateHistoryList(history); // <-- GÜNCELLENDİ
                   } else {
                     qDebug() << "Geçmiş çekilemedi:" << message;
                   }
                 });
+
+            // Benchmark widget'a kullanıcı adını bildir (Silme işlemi için)
+            m_benchmark->setUsername(username);
           });
 
   // 2. Anasayfa'daki "Hesabı Sil" butonu bağlantısı
@@ -306,7 +309,8 @@ void MainWindow::setupMenuButtons() {
                           [=](bool success, QList<QVariantMap> history,
                               QString message) {
                             if (success) {
-                              m_karsilastirma->updateHistoryList(history);
+                              m_benchmark->updateHistoryList(
+                                  history); // <-- GÜNCELLENDİ
                             }
                           });
                     } else {
@@ -377,10 +381,7 @@ void MainWindow::on_anasayfabuton_clicked() {
   ui->stackedWidget->setCurrentWidget(m_anasayfa);
   updateButtonStyles(ui->anasayfabuton);
 }
-void MainWindow::on_benchmarkbuton_clicked() {
-  ui->stackedWidget->setCurrentWidget(m_benchmark);
-  updateButtonStyles(ui->benchmarkbuton);
-}
+
 void MainWindow::on_karsilastirmabuton_clicked() {
   ui->stackedWidget->setCurrentWidget(m_karsilastirma);
   updateButtonStyles(ui->karsilastirmabuton);
@@ -401,7 +402,24 @@ void MainWindow::on_karsilastirmabuton_clicked() {
         currentUsername,
         [=](bool success, QList<QVariantMap> history, QString message) {
           if (success) {
-            m_karsilastirma->updateHistoryList(history);
+            // m_karsilastirma->updateHistoryList(history); // ARTIK BURADA
+            // DEĞİL
+          }
+        });
+  }
+}
+
+void MainWindow::on_benchmarkbuton_clicked() {
+  ui->stackedWidget->setCurrentWidget(m_benchmark);
+  updateButtonStyles(ui->benchmarkbuton);
+
+  // Sayfa açılınca geçmişi güncelle
+  if (userIsLoggedIn && !currentUsername.isEmpty()) {
+    netManager->getScoreHistory(
+        currentUsername,
+        [=](bool success, QList<QVariantMap> history, QString message) {
+          if (success) {
+            m_benchmark->updateHistoryList(history);
           }
         });
   }

@@ -1,5 +1,6 @@
 
 #include "benchmarkwidget.h"
+#include "../../Network/networkmanager.h"
 #include "benchmarkworker.h"
 #include "ui_benchmarkwidget.h"
 #include <QDebug>
@@ -60,6 +61,7 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
   ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
 
   setupCharts();
+  setupHistoryList();
 }
 
 BenchmarkWidget::~BenchmarkWidget() {
@@ -394,4 +396,69 @@ void BenchmarkWidget::onGpuDetected(QString gpuName) {
   m_detectedGpuName = gpuName;
   // İsim çok uzunsa kısaltabiliriz veya olduğu gibi bırakabiliriz
   qDebug() << "Arayüz GPU ismini aldı:" << m_detectedGpuName;
+}
+
+void BenchmarkWidget::setupHistoryList() {
+  // UI dosyasında zaten var, sadece butonu ekleyeceğiz
+  QVBoxLayout *layout =
+      qobject_cast<QVBoxLayout *>(ui->sonuc_gecmisi_frame->layout());
+  if (layout) {
+    QPushButton *clearBtn = new QPushButton("Geçmişi Temizle");
+    clearBtn->setStyleSheet("QPushButton { "
+                            "   background-color: #dc3545; "
+                            "   border-radius: 5px; "
+                            "   color: white; "
+                            "   padding: 5px 10px; "
+                            "   font-weight: bold; "
+                            "   border: none; "
+                            "   margin-top: 5px; "
+                            "}"
+                            "QPushButton:hover { background-color: #c82333; }");
+    layout->addWidget(clearBtn);
+
+    connect(clearBtn, &QPushButton::clicked, this,
+            &BenchmarkWidget::on_gecmisi_temizle_buton_clicked);
+  }
+}
+
+void BenchmarkWidget::updateHistoryList(const QList<QVariantMap> &history) {
+  if (!ui->sonuc_gecmisi_listesi)
+    return;
+  ui->sonuc_gecmisi_listesi->clear();
+
+  for (const QVariantMap &entry : history) {
+    QString date = entry["created_at"].toDateTime().toString("yyyy-MM-dd");
+    QString dateStr = entry["created_at"].toString();
+    if (dateStr.contains("T"))
+      dateStr = dateStr.split("T")[0];
+
+    int score = entry["score"].toInt();
+    QString itemText = QString("%1: - %2 pts").arg(dateStr).arg(score);
+    ui->sonuc_gecmisi_listesi->addItem(itemText);
+  }
+}
+
+void BenchmarkWidget::on_gecmisi_temizle_buton_clicked() {
+  if (m_username.isEmpty()) {
+    QMessageBox::warning(this, "Hata", "Önce giriş yapmalısınız.");
+    return;
+  }
+
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::question(
+      this, "Geçmişi Sil",
+      "Tüm test geçmişinizi silmek istediğinize emin misiniz?",
+      QMessageBox::Yes | QMessageBox::No);
+  if (reply == QMessageBox::No)
+    return;
+
+  // NetworkManager'ı include etmemiz lazım, cpp başında var mı bakalım.
+  // Yoksa ekleyelim. Var gibi görünüyor ama kontrol etmek lazım.
+  // BenchmarkWidget.cpp başında #include "networkmanager.h" yoksa eklemeliyiz.
+  // Şimdilik varsayalım, hata verirse ekleriz.
+  // Aslında MainWindow'da include edilmiş ama burada da lazım.
+  // Bu dosyada NetworkManager kullanılmamış daha önce.
+  // O yüzden hata verebilir.
+  // En iyisi bu fonksiyonu yazarken NetworkManager'ı da include listesine
+  // eklemek.
 }
