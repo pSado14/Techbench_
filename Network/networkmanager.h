@@ -7,7 +7,6 @@
 #include <QVariantMap>
 #include <functional>
 
-
 class NetworkManager : public QObject {
   Q_OBJECT
 public:
@@ -78,6 +77,12 @@ public:
   void getPrice(const QString &productName,
                 std::function<void(bool success, QString price, QString source)>
                     callback);
+
+  // --- YENİ: Ödeme Başlatma ---
+  void initializePayment(
+      const QString &username, int price, const QString &productName,
+      std::function<void(bool success, QString paymentUrl, QString message)>
+          callback);
 
 private:
   QNetworkAccessManager *manager;

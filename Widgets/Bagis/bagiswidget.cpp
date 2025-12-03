@@ -1,6 +1,7 @@
 #include "bagiswidget.h"
 #include "bagisistegidialog.h"
 #include "ui_bagiswidget.h"
+#include <QDesktopServices> // --- YENİ ---
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -9,7 +10,9 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QUrl> // --- YENİ ---
 #include <QVBoxLayout>
+
 
 BagisWidget::BagisWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::BagisWidget) {
@@ -270,6 +273,25 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
       "QPushButton { background-color: #4facfe; color: white; border-radius: "
       "5px; font-weight: bold; border: none; } QPushButton:hover { "
       "background-color: #00f2fe; }");
+
+  // Connect Support Button
+  connect(supportBtn, &QPushButton::clicked, this, [=]() {
+    // Slot yerine lambda kullanabiliriz veya slot'a parametre geçebiliriz.
+    // Basitlik için burada direkt çağırıyoruz.
+    // Ancak slot yapısı daha temiz olabilir.
+    // Şimdilik lambda ile çözelim çünkü request verisine ihtiyacımız var.
+    netManager->initializePayment(
+        currentUsername, request.targetAmount, request.title,
+        [=](bool success, QString paymentUrl, QString message) {
+          if (success) {
+            QDesktopServices::openUrl(QUrl(paymentUrl));
+          } else {
+            QMessageBox::critical(this, "Hata",
+                                  "Ödeme başlatılamadı: " + message);
+          }
+        });
+  });
+
   cardLayout->addWidget(supportBtn);
 
   cardsLayout->addWidget(card, row, col);

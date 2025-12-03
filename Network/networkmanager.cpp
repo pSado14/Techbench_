@@ -524,3 +524,50 @@ void NetworkManager::getPrice(
 
   fetcher->searchPrice(productName);
 }
+
+// --- ÖDEME BAŞLATMA ---
+void NetworkManager::initializePayment(
+    const QString &username, int price, const QString &productName,
+    std::function<void(bool, QString, QString)> callback) {
+  QUrl url(BASE_URL + "/payment/initialize");
+  QNetworkRequest request(url);
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  QJsonObject json;
+  json["price"] = price;
+  json["productName"] = productName;
+
+  QJsonObject userObj;
+  userObj["name"] = username;            // Basitlik için
+  userObj["email"] = "user@example.com"; // Placeholder
+  json["user"] = userObj;
+
+  QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+    QJsonObject jsonObject = jsonResponse.object();
+
+    bool success = false;
+    QString message = "Hata oluştu";
+    QString paymentUrl = "";
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (!jsonObject.isEmpty()) {
+        success = jsonObject["success"].toBool();
+        if (success) {
+          paymentUrl = jsonObject["paymentPageUrl"].toString();
+          message = "Ödeme sayfası oluşturuldu";
+        } else {
+          message = jsonObject["message"].toString();
+        }
+      }
+    } else {
+      message = "Bağlantı Hatası: " + reply->errorString();
+    }
+
+    callback(success, paymentUrl, message);
+    reply->deleteLater();
+  });
+}
