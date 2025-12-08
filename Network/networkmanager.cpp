@@ -460,6 +460,39 @@ void NetworkManager::sendForgotPasswordCode(
   });
 }
 
+// --- KULLANICI SIRALAMASI ---
+void NetworkManager::getUserRanking(
+    const QString &username,
+    std::function<void(bool success, int ranking, QString message)> callback) {
+  QUrl url(BASE_URL + "/ranking");
+  QUrlQuery query;
+  query.addQueryItem("username", username);
+  url.setQuery(query);
+
+  qDebug() << "Ranking Request URL:" << url.toString();
+
+  QNetworkRequest request(url);
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    if (reply->error() == QNetworkReply::NoError) {
+      QByteArray responseData = reply->readAll();
+      QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+      QJsonObject jsonObj = jsonDoc.object();
+
+      if (jsonObj["success"].toBool()) {
+        int ranking = jsonObj["ranking"].toInt();
+        callback(true, ranking, "Sıralama alındı.");
+      } else {
+        callback(false, 0, jsonObj["message"].toString());
+      }
+    } else {
+      callback(false, 0, "Ağ hatası: " + reply->errorString());
+    }
+    reply->deleteLater();
+  });
+}
+
 // --- ŞİFRE SIFIRLAMA ---
 void NetworkManager::resetPassword(
     const QString &email, const QString &code, const QString &newPassword,
@@ -580,7 +613,6 @@ void NetworkManager::searchProducts(
 }
 
 // --- ÖDEME BAŞLATMA ---
-// --- ÖDEME BAŞLATMA ---
 void NetworkManager::initializePayment(
     const QString &username, int price, const QString &productName,
     const QString &receiverUsername, int requestId,
@@ -593,11 +625,11 @@ void NetworkManager::initializePayment(
   json["price"] = price;
   json["productName"] = productName;
   json["receiverUsername"] = receiverUsername;
-  json["requestId"] = requestId; // --- YENİ ---
+  json["requestId"] = requestId;
 
   QJsonObject userObj;
-  userObj["name"] = username;            // Basitlik için
-  userObj["email"] = "user@example.com"; // Placeholder
+  userObj["name"] = username;
+  userObj["email"] = "user@example.com";
   json["user"] = userObj;
 
   QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());

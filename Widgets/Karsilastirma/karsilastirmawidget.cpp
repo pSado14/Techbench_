@@ -154,7 +154,7 @@ void KarsilastirmaWidget::updateRivalsList(const QList<QVariantMap> &rivals) {
   ui->sistem_listesi->clear();
 
   for (const QVariantMap &rival : rivals) {
-    QString username = rival["username"].toString();
+    QString username = rival["kullanici_adi"].toString();
 
     // Mevcut kullanıcıyı listede gösterme
     if (username == m_username) {
@@ -204,7 +204,7 @@ void KarsilastirmaWidget::on_karsilastir_buton_clicked() {
   // Item içinden saklanan veriyi al
   QVariantMap rivalData = item->data(Qt::UserRole).toMap();
 
-  QString username = rivalData["username"].toString();
+  QString username = rivalData["kullanici_adi"].toString();
   QString cpu = rivalData["cpu"].toString();
   QString gpu = rivalData["gpu"].toString();
   QString ram = rivalData["ram"].toString();

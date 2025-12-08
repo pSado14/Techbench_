@@ -524,6 +524,16 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QLabel" name="global_ranking_label">
+           <property name="text">
+            <string>Global Sıralama: -</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size: 12px; color: #aaa;</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       <item>

@@ -473,6 +473,32 @@ void AnasayfaWidget::bilgileriSifirla() {
 
 void AnasayfaWidget::setKullaniciBilgileri(const QString &ad) {
   ui->kullanici_adi_label->setText(ad);
+
+  if (ad == "Misafir Kullanıcı") {
+    if (ui->global_ranking_label) {
+      ui->global_ranking_label->setText("Global Sıralama: -");
+    }
+    return;
+  }
+
+  // Global Sıralamayı Çek
+  NetworkManager *nm = new NetworkManager(this);
+  qDebug() << "Sıralama isteniyor için kullanıcı:" << ad;
+  nm->getUserRanking(ad, [=](bool success, int ranking, QString message) {
+    if (success) {
+      qDebug() << "Sıralama başarılı:" << ranking;
+      if (ui->global_ranking_label) {
+        ui->global_ranking_label->setText("Global Sıralama: #" +
+                                          QString::number(ranking));
+      }
+    } else {
+      qDebug() << "Sıralama alınamadı:" << message;
+      if (ui->global_ranking_label) {
+        ui->global_ranking_label->setText("Sıralama: - (" + message + ")");
+      }
+    }
+    nm->deleteLater();
+  });
 }
 
 void AnasayfaWidget::setSistemBilgileri(const QString &cpu, const QString &gpu,

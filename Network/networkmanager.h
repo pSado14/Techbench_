@@ -40,6 +40,11 @@ public:
                                     QString message)>
                      callback);
 
+  // --- YENİ: Kullanıcı Sıralamasını Getirme ---
+  void getUserRanking(
+      const QString &username,
+      std::function<void(bool success, int ranking, QString message)> callback);
+
   // --- YENİ: Bağış İsteği Oluşturma ---
   void createDonationRequest(
       const QString &username, const QString &title, const QString &category,
