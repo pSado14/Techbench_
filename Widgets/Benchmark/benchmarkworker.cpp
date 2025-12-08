@@ -10,7 +10,6 @@
 #include <iostream>
 #include <vector>
 
-
 // Windows için rand_r implementasyonu (MinGW'de olmayabilir)
 #ifndef rand_r
 int rand_r(unsigned int *seedp) {
@@ -62,90 +61,106 @@ int BenchmarkWorker::runCPUTest() {
 
   std::vector<std::future<void>> futures;
   std::atomic<bool> stopFlag(false);
+  std::atomic<int> totalPrimes(0);
+  std::atomic<long long> totalOps(0);
 
-  // Her thread için görev fonksiyonu
+  // Her thread için asal sayı kontrolü + FPU işlemleri + matris çarpımı
   auto task = [&](int id) {
-    // Fizik Testi: 5000/N Küp Çarpışma Simülasyonu
-    struct Particle {
-      float x, y, z;
-      float vx, vy, vz;
-    };
+    // Asal sayı aralığı: 2 - 30.000.000 (~15000 puan hedefi)
+    int start = 2 + (id * 30000000 / threadCount);
+    int end = 2 + ((id + 1) * 30000000 / threadCount);
+    int localPrimes = 0;
+    volatile double fpuResult = 0.0;
+    long long localOps = 0;
 
-    int particleCount = 5000 / threadCount;
-    std::vector<Particle> particles(particleCount);
+    // Mini matris (4x4) için
+    double matrix1[4][4], matrix2[4][4], result[4][4];
+    for (int i = 0; i < 4; i++)
+      for (int j = 0; j < 4; j++) {
+        matrix1[i][j] = (i + j) * 0.1;
+        matrix2[i][j] = (i - j) * 0.2;
+      }
 
-    // Rastgele Başlangıç (Thread-safe rand lazım veya basit bir seed)
-    unsigned int seed = id * 1000 + 1;
-    for (int i = 0; i < particleCount; ++i) {
-      particles[i].x = (float)(rand_r(&seed) % 100);
-      particles[i].y = (float)(rand_r(&seed) % 100);
-      particles[i].z = (float)(rand_r(&seed) % 100);
-      particles[i].vx = (float)(rand_r(&seed) % 10 - 5) * 0.1f;
-      particles[i].vy = (float)(rand_r(&seed) % 10 - 5) * 0.1f;
-      particles[i].vz = (float)(rand_r(&seed) % 10 - 5) * 0.1f;
-    }
-
-    int steps = 2000;
-    for (int s = 0; s < steps; ++s) {
+    for (int n = start; n < end; ++n) {
       if (m_stop || stopFlag)
         return;
 
-      for (int i = 0; i < particleCount; ++i) {
-        particles[i].x += particles[i].vx;
-        particles[i].y += particles[i].vy;
-        particles[i].z += particles[i].vz;
-
-        if (particles[i].x < 0 || particles[i].x > 100)
-          particles[i].vx *= -1;
-        if (particles[i].y < 0 || particles[i].y > 100)
-          particles[i].vy *= -1;
-        if (particles[i].z < 0 || particles[i].z > 100)
-          particles[i].vz *= -1;
-
-        // Etkileşim
-        for (int k = 0; k < 10; k++) {
-          int other = rand_r(&seed) % particleCount;
-          float dx = particles[i].x - particles[other].x;
-          float dy = particles[i].y - particles[other].y;
-          float dz = particles[i].z - particles[other].z;
-          float distSq = dx * dx + dy * dy + dz * dz;
-          if (distSq < 1.0f && distSq > 0.0001f) {
-            particles[i].vx += dx * 0.01f;
-            particles[i].vy += dy * 0.01f;
-            particles[i].vz += dz * 0.01f;
+      // Asal sayı kontrolü
+      bool isPrime = true;
+      if (n < 2)
+        isPrime = false;
+      else if (n == 2)
+        isPrime = true;
+      else if (n % 2 == 0)
+        isPrime = false;
+      else {
+        for (int i = 3; i * i <= n; i += 2) {
+          if (n % i == 0) {
+            isPrime = false;
+            break;
           }
         }
       }
+
+      if (isPrime)
+        localPrimes++;
+
+      // Ağır FPU işlemleri (sin, cos, tan, sqrt, pow, log, exp)
+      double x = (double)n * 0.0001;
+      fpuResult += std::sin(x);
+      fpuResult += std::cos(x);
+      fpuResult += std::tan(x * 0.1);
+      fpuResult += std::sqrt((double)n);
+      fpuResult += std::pow(x, 1.5);
+      fpuResult += std::log(n + 1.0);
+      fpuResult += std::exp(x * 0.0001);
+      localOps += 7;
+
+      // Her 10000 sayıda bir matris çarpımı yap
+      if (n % 10000 == 0) {
+        for (int i = 0; i < 4; i++) {
+          for (int j = 0; j < 4; j++) {
+            result[i][j] = 0;
+            for (int k = 0; k < 4; k++) {
+              result[i][j] += matrix1[i][k] * matrix2[k][j];
+            }
+            fpuResult += result[i][j];
+          }
+        }
+        localOps += 64;
+      }
     }
+
+    totalPrimes += localPrimes;
+    totalOps += localOps;
   };
+
+  emit logMessage(
+      QString("CPU Testi: %1 thread kullanılıyor").arg(threadCount));
 
   // Threadleri başlat
   for (int i = 0; i < threadCount; ++i) {
     futures.push_back(std::async(std::launch::async, task, i));
   }
 
-  // İlerleme çubuğu simülasyonu (Ana thread beklerken)
-  int steps = 2000;
-  for (int s = 0; s < steps; s += steps / 100) {
-    if (m_stop) {
-      stopFlag = true;
-      break;
-    }
-    QThread::msleep(10); // Biraz bekle
-    emit progress((s * 100) / steps, 0);
-  }
-
-  // Threadlerin bitmesini bekle
+  // Threadlerin bitmesini bekle (gerçek iş süresi ölçülecek)
+  int completed = 0;
   for (auto &f : futures) {
     f.wait();
+    completed++;
+    emit progress((completed * 100) / threadCount, 0);
   }
 
   qint64 elapsed = timer.elapsed();
   if (elapsed == 0)
     elapsed = 1;
 
-  // Puanlama: Toplam iş / süre
-  return (45000000 * threadCount) / elapsed;
+  emit logMessage(QString("CPU Testi: %1 asal, %2M işlem tamamlandı")
+                      .arg(totalPrimes.load())
+                      .arg(totalOps.load() / 1000000));
+
+  // Puanlama: 45.000.000 / süre (ms)
+  return 45000000 / elapsed;
 }
 
 #include <QOffscreenSurface>
@@ -234,9 +249,9 @@ int BenchmarkWorker::runGPUTest() {
   QOpenGLFramebufferObject fbo(3840, 2160, fboFormat); // 4K Render
   fbo.bind();
 
-  // 4. Render Döngüsü
+  // 4. Render Döngüsü (~10000 puan hedefi, ~4.5 saniye)
   int frameCount = 0;
-  int targetFrames = 200; // Kare sayısını artırdık (Daha akıcı test)
+  int targetFrames = 40; // Kare sayısı
 
   float vertices[] = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -250,20 +265,17 @@ int BenchmarkWorker::runGPUTest() {
 
     program.setUniformValue("time", (float)frameCount * 0.01f);
 
-    // GPU'yu boğmak için arka arkaya çizim komutları
-    // 200 Draw Call per Frame -> TDR süresini aşmadan GPU'yu meşgul et
-    for (int k = 0; k < 200; k++) {
+    // GPU işlemi
+    for (int k = 0; k < 30; k++) {
       context.functions()->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
-    context.functions()->glFinish(); // Tüm komutların bitmesini bekle
+    context.functions()->glFinish();
 
     frameCount++;
 
     // İlerleme
-    if (frameCount % (targetFrames / 100) == 0) {
-      emit progress((frameCount * 100) / targetFrames, 1);
-    }
+    emit progress((frameCount * 100) / targetFrames, 1);
   }
 
   fbo.release();
@@ -282,56 +294,38 @@ int BenchmarkWorker::runRAMTest() {
   QElapsedTimer timer;
   timer.start();
 
-  // RAM Testi: Yüksek Bant Genişliği ve Kapasite
-  // Hedef: 4 GB (veya sistem izin verirse)
-  size_t targetSize = 4ULL * 1024 * 1024 * 1024; // 4 GB
+  // RAM Testi: 64 MB veri transfer hızı (~4000 puan hedefi, ~2 saniye)
+  size_t targetSize = 64ULL * 1024 * 1024; // 64 MB
   std::vector<char> memory;
 
   try {
     memory.resize(targetSize);
-  } catch (const std::bad_alloc &) {
-    // 4 GB ayrılamazsa 1 GB dene
-    targetSize = 1ULL * 1024 * 1024 * 1024;
-    try {
-      memory.resize(targetSize);
-    } catch (...) {
-      emit logMessage("RAM Testi: Yetersiz Bellek!");
+  } catch (...) {
+    emit logMessage("RAM Testi: Yetersiz Bellek!");
+    return 0;
+  }
+
+  emit logMessage(QString("RAM Testi: %1 MB buffer ayrıldı")
+                      .arg(targetSize / (1024 * 1024)));
+
+  // Pass 1: Sıralı Yazma
+  for (size_t i = 0; i < targetSize; ++i) {
+    if (m_stop)
       return 0;
+    memory[i] = (char)((i * 7) % 256);
+    if (i % (targetSize / 50) == 0) {
+      emit progress((i * 50) / targetSize, 2);
     }
   }
 
-  // Yazma Testi (Bant Genişliği)
-  // Belleği doldur (memset optimize edilmiştir, hızlıdır)
-  // Ancak CPU cache'i aşmak için büyük bloklar halinde yazıyoruz
-  size_t chunkSize = 1024 * 1024; // 1 MB chunks
-  size_t chunks = targetSize / chunkSize;
-
-  for (size_t i = 0; i < chunks; ++i) {
+  // Pass 2: Sıralı Okuma
+  volatile long long sum = 0;
+  for (size_t i = 0; i < targetSize; ++i) {
     if (m_stop)
       return 0;
-
-    // Bloğu doldur
-    std::fill(memory.begin() + i * chunkSize,
-              memory.begin() + (i + 1) * chunkSize, (char)(i % 255));
-
-    if (i % (chunks / 100) == 0) {
-      emit progress((i * 50) / chunks, 2); // İlk %50 yazma
-    }
-  }
-
-  // Okuma Testi (Doğrulama)
-  volatile char val = 0;
-  for (size_t i = 0; i < chunks; ++i) {
-    if (m_stop)
-      return 0;
-
-    // Rastgele erişim yerine sıralı erişim (Bant genişliği ölçümü için)
-    for (size_t j = 0; j < chunkSize; j += 4096) { // Her sayfadan bir bayt oku
-      val = memory[i * chunkSize + j];
-    }
-
-    if (i % (chunks / 100) == 0) {
-      emit progress(50 + (i * 50) / chunks, 2); // Son %50 okuma
+    sum += memory[i];
+    if (i % (targetSize / 50) == 0) {
+      emit progress(50 + (i * 50) / targetSize, 2);
     }
   }
 
@@ -339,8 +333,9 @@ int BenchmarkWorker::runRAMTest() {
   if (elapsed == 0)
     elapsed = 1;
 
-  // Puanlama: MB/s cinsinden hız
-  double speedMBps =
-      (double)(targetSize * 2) / (1024.0 * 1024.0) / (elapsed / 1000.0);
-  return (int)speedMBps;
+  emit logMessage(QString("RAM Testi: %1 MB okuma/yazma tamamlandı")
+                      .arg(targetSize / (1024 * 1024)));
+
+  // Puanlama: 8.000.000 / süre (ms)
+  return 8000000 / elapsed;
 }

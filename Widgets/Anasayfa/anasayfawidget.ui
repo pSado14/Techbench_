@@ -92,7 +92,7 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
       <item row="3" column="1">
        <widget class="QLabel" name="cpu_cores_label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>-</string>
         </property>
        </widget>
       </item>
@@ -106,7 +106,7 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
       <item row="4" column="1">
        <widget class="QLabel" name="cpu_clock_label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>-</string>
         </property>
        </widget>
       </item>
@@ -120,7 +120,7 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
       <item row="5" column="1">
        <widget class="QLabel" name="cprice_label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>-</string>
         </property>
        </widget>
       </item>
@@ -134,7 +134,7 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
       <item row="6" column="1">
        <widget class="QLabel" name="cpu_score_label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>-</string>
         </property>
        </widget>
       </item>
@@ -415,7 +415,7 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
     <item>
      <widget class="QLabel" name="laptop_baslik_label">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Laptop Modeli&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Cihaz Bilgisi&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -432,6 +432,16 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="laptop_price_label">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; color:#2ecc71;&quot;&gt;-&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
@@ -502,34 +512,20 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
         </property>
        </widget>
       </item>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <widget class="QLabel" name="kullanici_adi_label">
-          <property name="text">
-           <string>Misafir Kullanıcı</string>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size: 16px; font-weight: bold;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="global_siralama_label">
-          <property name="text">
-           <string>Global Sıralama: #8154</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="toplam_puan_label">
-          <property name="text">
-           <string>Toplam Puan</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <widget class="QLabel" name="kullanici_adi_label">
+           <property name="text">
+            <string>Misafir Kullanıcı</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size: 16px; font-weight: bold;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       <item>
        <widget class="QPushButton" name="hesapSilButon">
         <property name="styleSheet">

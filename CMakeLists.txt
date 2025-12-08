@@ -22,6 +22,7 @@ include_directories(
     Widgets/Bagis
     Widgets/Yardim
     Widgets/Main
+    Widgets/PriceSearch
     Network
 )
 
@@ -53,14 +54,15 @@ set(PROJECT_SOURCES
         Widgets/Bagis/bagiswidget.ui
         Widgets/Bagis/bagisistegidialog.cpp
         Widgets/Bagis/bagisistegidialog.h
+        Widgets/Bagis/moderndialogs.cpp
+        Widgets/Bagis/moderndialogs.h
         Widgets/Yardim/yardimwidget.cpp
         Widgets/Yardim/yardimwidget.h
         Widgets/Yardim/yardimwidget.ui
         Network/networkmanager.cpp
         Network/networkmanager.h
         Network/networkmanager.ui
-        Network/pricefetcher.cpp
-        Network/pricefetcher.h
+
         Widgets/Benchmark/benchmarkworker.cpp
         Widgets/Benchmark/benchmarkworker.h
         resources.qrc

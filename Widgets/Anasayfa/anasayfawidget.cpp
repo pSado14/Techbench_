@@ -28,9 +28,41 @@ AnasayfaWidget::AnasayfaWidget(QWidget *parent)
   if (ui->laptop_info_frame)
     ui->laptop_info_frame->setVisible(false);
 
+  // --- GPU SEÇİM UI KURULUMU ---
+  gpuSelectionLabel = new QLabel("Tam fiyat için model seçin:", this);
+  gpuModelComboBox = new QComboBox(this);
+  gpuSelectionLabel->setVisible(false);
+  gpuModelComboBox->setVisible(false);
+
+  // GPU Label'ın olduğu layout'a ekle
+  if (ui->gpu_model_label && ui->gpu_model_label->parentWidget() &&
+      ui->gpu_model_label->parentWidget()->layout()) {
+    ui->gpu_model_label->parentWidget()->layout()->addWidget(gpuSelectionLabel);
+    ui->gpu_model_label->parentWidget()->layout()->addWidget(gpuModelComboBox);
+  }
+
+  connect(gpuModelComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+          this, &AnasayfaWidget::onGpuModelSelected);
+
   // Fiyat kontrol sinyalini bağla
   connect(this, &AnasayfaWidget::priceCheckRequested, this,
           &AnasayfaWidget::checkPrice);
+
+  // Otomatik tarama başlatıldı - İPTAL (Kullanıcı isteği)
+  // taraVeGuncelle();
+}
+
+void AnasayfaWidget::onGpuModelSelected(int index) {
+  if (index < 0)
+    return;
+
+  QString price = gpuModelComboBox->itemData(index, Qt::UserRole).toString();
+  QString source =
+      gpuModelComboBox->itemData(index, Qt::UserRole + 1).toString();
+
+  if (!price.isEmpty()) {
+    setPrice("GPU", price, source);
+  }
 }
 
 AnasayfaWidget::~AnasayfaWidget() { delete ui; }
@@ -71,10 +103,56 @@ QString AnasayfaWidget::getHardwareInfo(const QString &cmd,
       continue;
     if (cleanLine.startsWith("PartNumber", Qt::CaseInsensitive))
       continue;
+    if (cleanLine.startsWith("ChassisTypes", Qt::CaseInsensitive))
+      continue;
 
     return cleanLine; // İlk geçerli veri
   }
   return "0"; // Bulunamazsa 0 döndür
+}
+
+QStringList AnasayfaWidget::getAllHardwareInfo(const QString &cmd,
+                                               const QStringList &args) {
+  QProcess process;
+  process.start(cmd, args);
+  process.waitForFinished();
+
+  QString result = QString::fromLocal8Bit(process.readAllStandardOutput());
+  QStringList lines =
+      result.split(QRegularExpression("[\r\n]+"), Qt::SkipEmptyParts);
+  QStringList validLines;
+
+  for (const QString &line : lines) {
+    QString cleanLine = line.trimmed();
+    if (cleanLine.isEmpty())
+      continue;
+    // Başlıkları atla
+    if (cleanLine.startsWith("Name", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("TotalPhysicalMemory", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("NumberOfCores", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("MaxClockSpeed", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("AdapterRAM", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("Speed", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("Caption", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("OSArchitecture", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("Manufacturer", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("PartNumber", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("ChassisTypes", Qt::CaseInsensitive))
+      continue;
+
+    validLines.append(cleanLine);
+  }
+  return validLines;
 }
 
 void AnasayfaWidget::on_sistemibilgilerinitarabuton_clicked() {
@@ -107,12 +185,46 @@ void AnasayfaWidget::taraVeGuncelle() {
   // 2. GPU (EKRAN KARTI) BİLGİLERİ
   // ==========================
 
-  QString gpuName =
-      getHardwareInfo("wmic", {"path", "win32_videocontroller", "get", "name"});
-  ui->gpu_model_label->setText(gpuName);
+  // Tüm GPU'ları çek
+  QStringList gpuList = getAllHardwareInfo(
+      "wmic", {"path", "win32_videocontroller", "get", "name"});
 
-  QString vramRaw = getHardwareInfo(
+  QString selectedGpuName = "Bilinmiyor";
+  int selectedGpuIndex = 0; // Varsayılan olarak ilk GPU
+
+  if (!gpuList.isEmpty()) {
+    selectedGpuName =
+        gpuList.first(); // Varsayılan: İlk bulunan (Genelde Intel)
+
+    // Harici GPU Önceliği (NVIDIA, AMD, Radeon, GeForce, RTX, GTX)
+    for (int i = 0; i < gpuList.size(); ++i) {
+      QString gpu = gpuList[i];
+      if (gpu.contains("NVIDIA", Qt::CaseInsensitive) ||
+          gpu.contains("AMD", Qt::CaseInsensitive) ||
+          gpu.contains("Radeon", Qt::CaseInsensitive) ||
+          gpu.contains("GeForce", Qt::CaseInsensitive) ||
+          gpu.contains("RTX", Qt::CaseInsensitive) ||
+          gpu.contains("GTX", Qt::CaseInsensitive)) {
+        selectedGpuName = gpu;
+        selectedGpuIndex = i;
+        break; // İlk harici GPU'yu bul ve çık
+      }
+    }
+  }
+
+  ui->gpu_model_label->setText(selectedGpuName);
+
+  // VRAM Bilgisi (Seçilen GPU'ya göre)
+  QStringList vramList = getAllHardwareInfo(
       "wmic", {"path", "win32_videocontroller", "get", "AdapterRAM"});
+
+  QString vramRaw = "0";
+  if (selectedGpuIndex < vramList.size()) {
+    vramRaw = vramList[selectedGpuIndex];
+  } else if (!vramList.isEmpty()) {
+    vramRaw = vramList.first();
+  }
+
   if (vramRaw != "0") {
     double vramBytes = vramRaw.toDouble();
     if (vramBytes > 0) {
@@ -213,12 +325,118 @@ void AnasayfaWidget::taraVeGuncelle() {
     ramString = QString::number(qRound(ramGB)) + " GB";
   }
 
-  emit sistemBilgileriGuncellendi(cpuName, gpuName, ramString);
+  emit sistemBilgileriGuncellendi(cpuName, selectedGpuName, ramString);
 
   // Butonu eski haline getir
   ui->sistemibilgilerinitarabuton->setText(
       "SİSTEM BİLGİLERİNİ GÜNCELLE / TARA");
   ui->sistemibilgilerinitarabuton->setEnabled(true);
+
+  // --- FİYAT TARAMASI TETİKLEME ---
+  // Laptop vs Desktop Kontrolü
+  QString chassisType =
+      getHardwareInfo("wmic", {"systemenclosure", "get", "chassistypes"});
+  // Chassis Types: 8, 9, 10, 11, 12, 14, 18, 21, 30, 31, 32 -> Laptop/Portable
+  bool isLaptop = false;
+  if (chassisType.contains("8") || chassisType.contains("9") ||
+      chassisType.contains("10") || chassisType.contains("11") ||
+      chassisType.contains("18") || chassisType.contains("21") ||
+      chassisType.contains("30") || chassisType.contains("31") ||
+      chassisType.contains("32")) {
+    isLaptop = true;
+  }
+
+  // laptop_info_frame'i görünür yap ve bilgileri güncelle
+  if (ui->laptop_info_frame)
+    ui->laptop_info_frame->setVisible(true);
+
+  if (isLaptop) {
+    // Laptop ise model ismini bul ve arat
+    QString laptopModel = getHardwareInfo("wmic", {"csproduct", "get", "name"});
+
+    // Laptop model label'ını güncelle
+    if (ui->laptop_model_label) {
+      if (laptopModel != "0" && !laptopModel.isEmpty())
+        ui->laptop_model_label->setText("Laptop: " + laptopModel);
+      else
+        ui->laptop_model_label->setText("Laptop");
+    }
+
+    if (laptopModel != "0" && !laptopModel.isEmpty()) {
+      emit priceCheckRequested(laptopModel, "LAPTOP");
+    }
+
+    if (ramModel != "Bilinmiyor") {
+      emit priceCheckRequested(ramModel, "RAM");
+    }
+  } else {
+    // Masaüstü ise
+    QString desktopModel =
+        getHardwareInfo("wmic", {"csproduct", "get", "name"});
+
+    // Masaüstü model label'ını güncelle
+    if (ui->laptop_model_label) {
+      if (desktopModel != "0" && !desktopModel.isEmpty() &&
+          desktopModel != "System Product Name")
+        ui->laptop_model_label->setText("Masaüstü: " + desktopModel);
+      else
+        ui->laptop_model_label->setText("Masaüstü");
+    }
+
+    // Parça parça arat
+    if (cpuName != "0" && !cpuName.isEmpty())
+      emit priceCheckRequested(cpuName, "CPU");
+
+    if (selectedGpuName != "0" && !selectedGpuName.isEmpty()) {
+      // --- GPU MODEL SEÇİMİ ---
+      QString searchQuery = selectedGpuName;
+      // Gereksiz kelimeleri temizle
+      searchQuery.replace("NVIDIA", "", Qt::CaseInsensitive);
+      searchQuery.replace("GeForce", "", Qt::CaseInsensitive);
+      searchQuery.replace("Laptop GPU", "", Qt::CaseInsensitive);
+      searchQuery = searchQuery.trimmed();
+
+      NetworkManager *nm = new NetworkManager(this);
+      nm->searchProducts(
+          searchQuery, "GPU",
+          [=](bool success, QList<QVariantMap> results, QString message) {
+            gpuModelComboBox->clear();
+            gpuSelectionLabel->setVisible(false);
+            gpuModelComboBox->setVisible(false);
+
+            if (success && !results.isEmpty()) {
+              if (results.size() > 1) {
+                // Birden fazla sonuç varsa dropdown göster
+                gpuSelectionLabel->setVisible(true);
+                gpuModelComboBox->setVisible(true);
+
+                gpuModelComboBox->addItem("Seçiniz...", ""); // Varsayılan boş
+
+                for (const QVariantMap &product : results) {
+                  QString name = product["product_name"].toString();
+                  QString price = product["price"].toString();
+                  QString source = product["source"].toString();
+
+                  gpuModelComboBox->addItem(name + " (" + price + ")", price);
+                  gpuModelComboBox->setItemData(gpuModelComboBox->count() - 1,
+                                                source, Qt::UserRole + 1);
+                }
+              } else {
+                // Tek sonuç varsa direkt fiyatı bas
+                QString price = results[0]["price"].toString();
+                QString source = results[0]["source"].toString();
+                setPrice("GPU", price, source);
+              }
+              // Sonuç yoksa eski usül devam et
+              emit priceCheckRequested(selectedGpuName, "GPU");
+            }
+            nm->deleteLater();
+          });
+    }
+
+    if (ramModel != "Bilinmiyor")
+      emit priceCheckRequested(ramModel, "RAM");
+  }
 }
 
 void AnasayfaWidget::bilgileriSifirla() {
@@ -245,7 +463,12 @@ void AnasayfaWidget::bilgileriSifirla() {
   m_cpuScore = 0;
   m_gpuScore = 0;
   m_ramScore = 0;
+  m_gpuScore = 0;
+  m_ramScore = 0;
   updateCharts(0, 0, 0);
+
+  if (ui->laptop_price_label)
+    ui->laptop_price_label->setText("-");
 }
 
 void AnasayfaWidget::setKullaniciBilgileri(const QString &ad) {
@@ -288,27 +511,45 @@ void AnasayfaWidget::setSistemBilgileri(const QString &cpu, const QString &gpu,
 
     QString laptopModel = getHardwareInfo("wmic", {"csproduct", "get", "name"});
 
-    if (ui->laptop_model_label)
-      ui->laptop_model_label->setText(laptopModel);
+    if (ui->laptop_model_label) {
+      if (laptopModel != "0" && !laptopModel.isEmpty())
+        ui->laptop_model_label->setText("Laptop: " + laptopModel);
+      else
+        ui->laptop_model_label->setText("Laptop");
+    }
 
     // Laptop ise sadece model ismini arat
     if (laptopModel != "0" && !laptopModel.isEmpty()) {
+      qDebug() << "Laptop Model Search Query:" << laptopModel;
       emit priceCheckRequested(laptopModel, "LAPTOP");
 
       // UI Hazırlığı
-      if (ui->cprice_label)
-        ui->cprice_label->setText("Aranıyor...");
-      if (ui->g_price_label)
-        ui->g_price_label->setText(
-            "-"); // Laptopta ayrı GPU fiyatı olmaz genelde
-      if (ui->r_price_label)
-        ui->r_price_label->setText("-");
-      if (ui->ram_price_label)
-        ui->ram_price_label->setText("Laptop Fiyatı:");
+      if (ui->laptop_price_label)
+        ui->laptop_price_label->setText("Aranıyor...");
     }
+
+    if (ui->g_price_label)
+      ui->g_price_label->setText("-"); // Laptopta ayrı GPU fiyatı olmaz genelde
+    if (ui->r_price_label)
+      ui->r_price_label->setText("-");
+    if (ui->ram_price_label)
+      ui->ram_price_label->setText("Fiyat:");
+
   } else {
+    // Masaüstü ise
     if (ui->laptop_info_frame)
-      ui->laptop_info_frame->setVisible(false);
+      ui->laptop_info_frame->setVisible(true);
+
+    QString desktopModel =
+        getHardwareInfo("wmic", {"csproduct", "get", "name"});
+
+    if (ui->laptop_model_label) {
+      if (desktopModel != "0" && !desktopModel.isEmpty() &&
+          desktopModel != "System Product Name")
+        ui->laptop_model_label->setText("Masaüstü: " + desktopModel);
+      else
+        ui->laptop_model_label->setText("Masaüstü");
+    }
 
     // Masaüstü ise parça parça arat
     if (cpu != "Taranmadı" && cpu != "-")
@@ -323,9 +564,10 @@ void AnasayfaWidget::setSistemBilgileri(const QString &cpu, const QString &gpu,
 void AnasayfaWidget::setPrice(const QString &type, const QString &price,
                               const QString &source) {
   QString priceText = price;
-  if (!source.isEmpty()) {
-    priceText += " (" + source + ")";
-  }
+  // Source text removed as per user request
+  // if (!source.isEmpty()) {
+  //   priceText += " (" + source + ")";
+  // }
 
   if (type == "CPU") {
     if (ui->cprice_label)
@@ -337,11 +579,8 @@ void AnasayfaWidget::setPrice(const QString &type, const QString &price,
     if (ui->r_price_label)
       ui->r_price_label->setText(priceText);
   } else if (type == "LAPTOP") {
-    // Laptop fiyatını CPU label'ına veya özel bir yere yazalım
-    // Şimdilik RAM label'ının başlığını "Laptop Fiyatı" yaptık, değerini de
-    // oraya yazalım
-    if (ui->r_price_label)
-      ui->r_price_label->setText(priceText);
+    if (ui->laptop_price_label)
+      ui->laptop_price_label->setText(priceText);
   }
 }
 
@@ -694,12 +933,13 @@ void AnasayfaWidget::checkPrice(const QString &productName,
   setPrice(type, "Aranıyor...", "");
 
   NetworkManager *nm = new NetworkManager(this);
-  nm->getPrice(productName, [=](bool success, QString price, QString source) {
-    if (success) {
-      setPrice(type, price, source);
-    } else {
-      setPrice(type, "Bulunamadı", "");
-    }
-    nm->deleteLater();
-  });
+  nm->getPrice(productName, type,
+               [=](bool success, QString price, QString source) {
+                 if (success) {
+                   setPrice(type, price, source);
+                 } else {
+                   setPrice(type, "Bulunamadı", "");
+                 }
+                 nm->deleteLater();
+               });
 }

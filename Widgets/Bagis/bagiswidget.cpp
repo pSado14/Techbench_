@@ -1,18 +1,22 @@
 #include "bagiswidget.h"
 #include "bagisistegidialog.h"
+#include "moderndialogs.h"
 #include "ui_bagiswidget.h"
-#include <QDesktopServices> // --- YENİ ---
+#include <QDesktopServices>
+#include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
-#include <QUrl> // --- YENİ ---
+#include <QSizePolicy>
+#include <QTreeWidget>
+#include <QUrl>
 #include <QVBoxLayout>
-
 
 BagisWidget::BagisWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::BagisWidget) {
@@ -38,17 +42,33 @@ void BagisWidget::setupUiProgrammatically() {
     delete layout();
   }
 
-  QVBoxLayout *mainLayout = new QVBoxLayout(this);
-  mainLayout->setContentsMargins(20, 20, 20, 20);
+  QVBoxLayout *rootLayout = new QVBoxLayout(this);
+  rootLayout->setContentsMargins(20, 20, 20, 20);
+
+  // --- Main Container Frame ---
+  QFrame *mainFrame = new QFrame();
+  // Dark background with border and rounded corners
+  mainFrame->setStyleSheet(
+      "QFrame { background-color: #2b2e38; border: 1px solid #3c404d; "
+      "border-radius: 15px; }"
+      "QLabel { color: #ffffff; font-family: 'Segoe UI', sans-serif; border: "
+      "none; background: transparent; }");
+
+  QVBoxLayout *mainLayout = new QVBoxLayout(mainFrame);
   mainLayout->setSpacing(20);
+  mainLayout->setContentsMargins(20, 20, 20, 20);
 
   // --- Page Title ---
   QLabel *pageTitle = new QLabel("Bağış Sayfası");
   pageTitle->setStyleSheet(
-      "color: white; font-size: 24px; font-weight: bold; margin-bottom: 10px;");
+      "color: white; font-size: 24px; font-weight: bold; margin-bottom: 10px; "
+      "border: none; background: transparent;");
   mainLayout->addWidget(pageTitle);
 
   // --- Create Request Button ---
+  QHBoxLayout *topButtonsLayout = new QHBoxLayout();
+  topButtonsLayout->setSpacing(10);
+
   QPushButton *createRequestBtn =
       new QPushButton("+ Bağış İsteği oluştur", this);
   createRequestBtn->setFixedSize(180, 40);
@@ -58,14 +78,37 @@ void BagisWidget::setupUiProgrammatically() {
       "   color: white; "
       "   border-radius: 5px; "
       "   font-weight: bold; "
+      "   border: none;"
+      "   outline: none;"
       "}"
       "QPushButton:hover { background-color: #00f2fe; }");
 
   connect(createRequestBtn, &QPushButton::clicked, this,
           &BagisWidget::on_createRequestBtn_clicked);
 
-  // Add button
-  mainLayout->addWidget(createRequestBtn);
+  topButtonsLayout->addWidget(createRequestBtn);
+
+  // --- Refresh Button ---
+  QPushButton *refreshBtn = new QPushButton(this);
+  refreshBtn->setFixedSize(40, 40);
+  refreshBtn->setIcon(QIcon(":/Assets/refresh.png"));
+  refreshBtn->setIconSize(QSize(24, 24));
+  refreshBtn->setStyleSheet("QPushButton { "
+                            "   background-color: transparent; "
+                            "   border-radius: 5px; "
+                            "   border: none;"
+                            "   outline: none;"
+                            "}"
+                            "QPushButton:hover { background-color: #444; }");
+
+  connect(refreshBtn, &QPushButton::clicked, this,
+          &BagisWidget::loadDonationRequests);
+
+  topButtonsLayout->addWidget(refreshBtn);
+  topButtonsLayout->addStretch(); // Push buttons to left
+
+  // Add buttons layout
+  mainLayout->addLayout(topButtonsLayout);
 
   // --- Scroll Area for Cards ---
   QScrollArea *scrollArea = new QScrollArea(this);
@@ -99,6 +142,8 @@ void BagisWidget::setupUiProgrammatically() {
 
   scrollArea->setWidget(scrollContent);
   mainLayout->addWidget(scrollArea);
+
+  rootLayout->addWidget(mainFrame);
 }
 
 void BagisWidget::on_createRequestBtn_clicked() {
@@ -111,12 +156,12 @@ void BagisWidget::on_createRequestBtn_clicked() {
         currentUsername, part.name, part.category, part.price,
         [=](bool success, QString message) {
           if (success) {
-            QMessageBox::information(this, "Başarılı",
-                                     "Bağış isteği oluşturuldu.");
+            ModernMessageBox::information(this, "Başarılı",
+                                          "Bağış isteği oluşturuldu.");
             loadDonationRequests(); // Listeyi yenile
           } else {
-            QMessageBox::critical(this, "Hata",
-                                  "İstek oluşturulamadı: " + message);
+            ModernMessageBox::critical(this, "Hata",
+                                       "İstek oluşturulamadı: " + message);
           }
         });
   }
@@ -140,14 +185,23 @@ void BagisWidget::loadDonationRequests() {
 
           for (const QVariantMap &reqData : requests) {
             DonationRequest req;
+            req.id = reqData["id"].toInt();
             req.title = reqData["title"].toString();
             req.requester = reqData["username"].toString();
-            req.timeLeft = "30 Gün Kaldı"; // Backend'den gelirse oradan al
-            req.currentAmount = 0;         // Backend'den gelirse oradan al
+            req.timeLeft = "30 Gün Kaldı";
+            req.currentAmount =
+                reqData["collected_amount"]
+                    .toDouble(); // toInt() "910.00" için 0 dönebilir
             req.targetAmount = reqData["price"].toInt();
-            req.category = reqData["category"].toString(); // --- YENİ ---
+            req.category = reqData["category"].toString();
             req.iconColor = "#4facfe";
             req.isCompleted = false;
+
+            // Varsayılan bağış miktarı (örneğin 100 TL veya kalan miktar)
+            int remaining = req.targetAmount - req.currentAmount;
+            req.selectedAmount = (remaining > 100) ? 100 : remaining;
+            if (req.selectedAmount <= 0)
+              req.selectedAmount = 10; // Minimum 10 TL
 
             createDonationCard(req, row, col);
 
@@ -233,64 +287,147 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
   cardLayout->addWidget(progress);
 
   // Percentage
-  QLabel *percentLabel = new QLabel("0%");
+  int percent = 0;
+  if (request.targetAmount > 0) {
+    percent = (request.currentAmount * 100) / request.targetAmount;
+  }
+  QLabel *percentLabel = new QLabel(QString("%% %1 Tamamlandı").arg(percent));
   percentLabel->setAlignment(Qt::AlignRight);
   percentLabel->setStyleSheet("color: white; font-size: 12px; font-weight: "
                               "bold; background: transparent;");
   cardLayout->addWidget(percentLabel);
 
+  // --- YENİ: Toplanan ve Kalan Miktar ---
+  QHBoxLayout *amountsLayout = new QHBoxLayout();
+
+  QLabel *collectedLabel =
+      new QLabel(QString("Gönderilen: %1").arg(request.currentAmount));
+  collectedLabel->setStyleSheet("color: #4facfe; font-size: 11px; font-weight: "
+                                "bold; background: transparent;");
+  amountsLayout->addWidget(collectedLabel);
+
+  amountsLayout->addStretch();
+
+  int remainingAmount = request.targetAmount - request.currentAmount;
+  if (remainingAmount < 0)
+    remainingAmount = 0;
+  QLabel *remainingLabel =
+      new QLabel(QString("Kalan: %1 TL").arg(remainingAmount));
+  remainingLabel->setStyleSheet("color: #ff6b6b; font-size: 11px; font-weight: "
+                                "bold; background: transparent;");
+  amountsLayout->addWidget(remainingLabel);
+
+  cardLayout->addLayout(amountsLayout);
+
   // Controls
   QHBoxLayout *controlsLayout = new QHBoxLayout();
-  QLabel *amountLabel = new QLabel("Miktar\n(Puan)");
+  QLabel *amountLabel = new QLabel("Miktar\n(TL)");
   amountLabel->setStyleSheet(
       "color: white; font-size: 11px; background: transparent;");
 
   QPushButton *minusBtn = new QPushButton("-");
   minusBtn->setFixedSize(30, 30);
   minusBtn->setStyleSheet("background-color: #333; color: white; "
-                          "border-radius: 5px; border: none;");
+                          "border-radius: 5px; border: none; outline: none;");
 
-  QLabel *valueLabel = new QLabel(QString::number(request.targetAmount));
-  valueLabel->setAlignment(Qt::AlignCenter);
-  valueLabel->setStyleSheet(
-      "color: white; background-color: #2c2c2c; border-radius: 5px; padding: "
-      "5px; min-width: 40px;");
+  // --- DEĞİŞİKLİK: Label yerine Button kullanıyoruz ---
+  QPushButton *valueButton =
+      new QPushButton(QString::number(request.selectedAmount));
+  valueButton->setFixedSize(60, 30); // Biraz daha geniş
+  valueButton->setStyleSheet(
+      "QPushButton { "
+      "   color: white; background-color: #2c2c2c; border-radius: 5px; "
+      "   border: 1px solid #3c404d; font-weight: bold;"
+      "}"
+      "QPushButton:hover { background-color: #3c404d; border: 1px solid "
+      "#4facfe; }");
 
   QPushButton *plusBtn = new QPushButton("+");
   plusBtn->setFixedSize(30, 30);
   plusBtn->setStyleSheet("background-color: #333; color: white; border-radius: "
-                         "5px; border: none;");
+                         "5px; border: none; outline: none;");
 
   controlsLayout->addWidget(amountLabel);
   controlsLayout->addWidget(minusBtn);
-  controlsLayout->addWidget(valueLabel);
+  controlsLayout->addWidget(valueButton);
   controlsLayout->addWidget(plusBtn);
   cardLayout->addLayout(controlsLayout);
 
-  QPushButton *supportBtn = new QPushButton("Destek Ol");
-  supportBtn->setFixedHeight(40);
-  supportBtn->setStyleSheet(
-      "QPushButton { background-color: #4facfe; color: white; border-radius: "
-      "5px; font-weight: bold; border: none; } QPushButton:hover { "
-      "background-color: #00f2fe; }");
+  // --- YENİ: Buton İşlevleri ---
 
-  // Connect Support Button
-  connect(supportBtn, &QPushButton::clicked, this, [=]() {
-    // Slot yerine lambda kullanabiliriz veya slot'a parametre geçebiliriz.
-    // Basitlik için burada direkt çağırıyoruz.
-    // Ancak slot yapısı daha temiz olabilir.
-    // Şimdilik lambda ile çözelim çünkü request verisine ihtiyacımız var.
-    netManager->initializePayment(
-        currentUsername, request.targetAmount, request.title,
-        [=](bool success, QString paymentUrl, QString message) {
-          if (success) {
-            QDesktopServices::openUrl(QUrl(paymentUrl));
-          } else {
-            QMessageBox::critical(this, "Hata",
-                                  "Ödeme başlatılamadı: " + message);
-          }
-        });
+  // 1. Manuel Giriş (Butona Tıklayınca)
+  connect(valueButton, &QPushButton::clicked, [=]() {
+    int current = valueButton->text().toInt();
+    int remaining = request.targetAmount - request.currentAmount;
+    if (remaining <= 0)
+      remaining = 10000; // Eğer hedef tamamlandıysa üst sınır koymayalım
+
+    bool ok;
+    int val = ModernInputDialog::getInt(
+        this, "Bağış Miktarı",
+        QString("Lütfen bağış miktarını giriniz (Max: %1 TL):").arg(remaining),
+        current, 10, remaining, 1, &ok);
+
+    if (ok) {
+      valueButton->setText(QString::number(val));
+    }
   });
+
+  // 2. Eksi Butonu
+  connect(minusBtn, &QPushButton::clicked, [=]() {
+    int current = valueButton->text().toInt();
+    if (current > 10) { // Minimum 10 TL
+      current -= 10;
+      valueButton->setText(QString::number(current));
+    }
+  });
+
+  // 3. Artı Butonu
+  connect(plusBtn, &QPushButton::clicked, [=]() {
+    int current = valueButton->text().toInt();
+    int remaining = request.targetAmount - request.currentAmount;
+    // Eğer hedef dolduysa veya kalan miktar çok azsa bile artırabilsin mi?
+    // Kullanıcı isteğine göre sınırlandırıyoruz:
+    if (current < remaining) {
+      current += 10;
+      valueButton->setText(QString::number(current));
+    }
+  });
+
+  QPushButton *supportBtn = new QPushButton();
+  supportBtn->setFixedHeight(40);
+
+  if (percent >= 100) {
+    supportBtn->setText("Tamamlandı");
+    supportBtn->setStyleSheet(
+        "QPushButton { background-color: #2ecc71; color: white; border-radius: "
+        "5px; font-weight: bold; border: none; outline: none; } "
+        "QPushButton:disabled { background-color: #2ecc71; opacity: 0.7; "
+        "color: white; }");
+    supportBtn->setEnabled(false);
+  } else {
+    supportBtn->setText("Destek Ol");
+    supportBtn->setStyleSheet(
+        "QPushButton { background-color: #4facfe; color: white; border-radius: "
+        "5px; font-weight: bold; border: none; outline: none; } "
+        "QPushButton:hover { "
+        "background-color: #00f2fe; }");
+
+    // Connect Support Button
+    connect(supportBtn, &QPushButton::clicked, this, [=]() {
+      int amountToDonate = valueButton->text().toInt();
+      netManager->initializePayment(
+          currentUsername, amountToDonate, request.title, request.requester,
+          request.id, [=](bool success, QString paymentUrl, QString message) {
+            if (success) {
+              QDesktopServices::openUrl(QUrl(paymentUrl));
+            } else {
+              ModernMessageBox::critical(this, "Hata",
+                                         "Ödeme başlatılamadı: " + message);
+            }
+          });
+    });
+  }
 
   cardLayout->addWidget(supportBtn);
 

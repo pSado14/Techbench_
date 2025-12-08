@@ -1,8 +1,8 @@
 #include "giriswidget.h"
+#include "moderndialogs.h"
 #include "sifremiunuttumdialog.h"
 #include "ui_giriswidget.h"
 #include <QDebug>
-#include <QMessageBox>
 
 GirisWidget::GirisWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::GirisWidget) {
@@ -19,6 +19,7 @@ GirisWidget::GirisWidget(QWidget *parent)
       "   font-weight: bold; "
       "   font-size: 14px; "
       "   border: none; "
+      "   outline: none;"
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
@@ -32,6 +33,7 @@ GirisWidget::GirisWidget(QWidget *parent)
       "   text-align: right; "
       "   padding: 0; "
       "   border: none; "
+      "   outline: none;"
       "}"
       "QPushButton:hover { color: #4facfe; }");
 
@@ -52,8 +54,8 @@ void GirisWidget::on_giris_yap_butonu_sayfa_clicked() {
 
   // Basit Kontrol
   if (username.isEmpty() || password.isEmpty()) {
-    QMessageBox::warning(this, "Hata",
-                         "Lütfen kullanıcı adı ve şifre giriniz.");
+    ModernMessageBox::critical(this, "Hata",
+                               "Lütfen kullanıcı adı ve şifre giriniz.");
     return;
   }
 
@@ -75,7 +77,7 @@ void GirisWidget::on_giris_yap_butonu_sayfa_clicked() {
           ui->sifre_input_sayfa->clear();
         } else {
           // --- HATA ---
-          QMessageBox::warning(this, "Giriş Başarısız", message);
+          ModernMessageBox::critical(this, "Giriş Başarısız", message);
         }
       });
 }

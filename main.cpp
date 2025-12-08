@@ -1,23 +1,32 @@
-#include "mainwindow.h"
-#include <QApplication>
-#include <QIcon>
 
-extern "C" {
-__declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
-__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
+#include "Widgets/Main/mainwindow.h"
+#include <QApplication>
+#include <QNetworkProxyFactory>
+#include <cstdio>
 
 int main(int argc, char *argv[]) {
+  // Redirect stdout and stderr to a file for debugging
+  freopen("startup_debug.txt", "w", stdout);
+  freopen("startup_debug.txt", "w", stderr);
+
+  printf("Starting application...\n");
+  fflush(stdout);
+
   QApplication a(argc, argv);
+  printf("QApplication created.\n");
+  fflush(stdout);
 
-  // Buradaki a.setWindowIcon... satırını SİL veya YORUMA AL.
-  // a.setWindowIcon(QIcon(":/logo.png"));
+  QNetworkProxyFactory::setUseSystemConfiguration(true);
 
+  printf("Creating MainWindow...\n");
+  fflush(stdout);
   MainWindow w;
 
-  // --- İKONU BURADA, PENCERE OLUŞTUKTAN SONRA VER ---
-  w.setWindowIcon(QIcon(":/Assets/logo.png"));
-
+  printf("Showing MainWindow...\n");
+  fflush(stdout);
   w.show();
+
+  printf("Entering event loop...\n");
+  fflush(stdout);
   return a.exec();
 }

@@ -1,6 +1,8 @@
 #include "sifremiunuttumdialog.h"
+#include "moderndialogs.h"
 #include "ui_sifremiunuttumdialog.h"
-#include <QMessageBox>
+#include <QGraphicsDropShadowEffect>
+#include <QPushButton>
 
 SifremiUnuttumDialog::SifremiUnuttumDialog(NetworkManager *networkManager,
                                            QWidget *parent)
@@ -41,6 +43,38 @@ SifremiUnuttumDialog::SifremiUnuttumDialog(NetworkManager *networkManager,
       "QPushButton:disabled { background-color: #cccccc; color: #666666; }");
 
   ui->stackedWidget->setCurrentIndex(0); // İlk sayfa: E-posta girişi
+
+  // --- MODERN POP-UP STİLİ ---
+  setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+  setAttribute(Qt::WA_TranslucentBackground);
+
+  // Ana widget'a stil verelim (veya yeni bir frame ekleyelim)
+  // Mevcut yapıda direkt this->setStyleSheet çalışmayabilir çünkü translucent.
+  // Bu yüzden içindeki her şeyi bir QFrame içine almak en iyisi ama UI
+  // dosyasını değiştiremiyoruz. Alternatif: UI'daki en dış widget'a stil
+  // verelim. UI dosyasında en dışta bir layout var. Biz kodla bir frame ekleyip
+  // layout'u içine alabiliriz ama karmaşık. Basit çözüm: Arka plan rengini ve
+  // kenarlığı stylesheet ile verelim.
+
+  // Close Button (Sağ üst)
+  QPushButton *closeBtn = new QPushButton("X", this);
+  closeBtn->setGeometry(this->width() - 40, 10, 30, 30);
+  closeBtn->setStyleSheet(
+      "QPushButton { background-color: transparent; color: #bec3cd; "
+      "font-weight: bold; font-size: 16px; border: none; }"
+      "QPushButton:hover { color: #ff4d4d; }");
+  connect(closeBtn, &QPushButton::clicked, this, &QDialog::reject);
+
+  // Pencereyi sürükleyebilmek için event filter veya mouse event override
+  // gerekir. Şimdilik basit bırakalım.
+
+  // Stil
+  this->setStyleSheet(
+      "QDialog { background-color: #2b2e38; border: 1px solid #3c404d; "
+      "border-radius: 10px; } "
+      "QLabel { color: white; } "
+      "QLineEdit { background-color: #1e1e1e; color: white; border: 1px solid "
+      "#3c404d; border-radius: 5px; padding: 8px; }");
 }
 
 SifremiUnuttumDialog::~SifremiUnuttumDialog() { delete ui; }
@@ -49,7 +83,8 @@ void SifremiUnuttumDialog::on_kodGonderButon_clicked() {
   QString email = ui->emailLineEdit->text().trimmed();
 
   if (email.isEmpty()) {
-    QMessageBox::warning(this, "Hata", "Lütfen e-posta adresinizi girin.");
+    ModernMessageBox::critical(this, "Hata",
+                               "Lütfen e-posta adresinizi girin.");
     return;
   }
 
@@ -63,11 +98,11 @@ void SifremiUnuttumDialog::on_kodGonderButon_clicked() {
 
     if (success) {
       m_email = email;
-      QMessageBox::information(this, "Başarılı",
-                               "Doğrulama kodu e-posta adresinize gönderildi.");
+      ModernMessageBox::information(
+          this, "Başarılı", "Doğrulama kodu e-posta adresinize gönderildi.");
       ui->stackedWidget->setCurrentIndex(1); // İkinci sayfa: Kod ve Yeni Şifre
     } else {
-      QMessageBox::critical(this, "Hata", message);
+      ModernMessageBox::critical(this, "Hata", message);
     }
   });
 }
@@ -77,7 +112,7 @@ void SifremiUnuttumDialog::on_sifreYenileButon_clicked() {
   QString newPassword = ui->yeniSifreLineEdit->text();
 
   if (code.isEmpty() || newPassword.isEmpty()) {
-    QMessageBox::warning(this, "Hata", "Lütfen tüm alanları doldurun.");
+    ModernMessageBox::critical(this, "Hata", "Lütfen tüm alanları doldurun.");
     return;
   }
 
@@ -90,12 +125,12 @@ void SifremiUnuttumDialog::on_sifreYenileButon_clicked() {
         ui->sifreYenileButon->setText("Şifreyi Yenile");
 
         if (success) {
-          QMessageBox::information(
+          ModernMessageBox::information(
               this, "Başarılı",
               "Şifreniz başarıyla güncellendi. Şimdi giriş yapabilirsiniz.");
           accept(); // Diyaloğu kapat
         } else {
-          QMessageBox::critical(this, "Hata", message);
+          ModernMessageBox::critical(this, "Hata", message);
         }
       });
 }

@@ -1,7 +1,7 @@
 #ifndef BAGISWIDGET_H
 #define BAGISWIDGET_H
 
-#include "../../Network/networkmanager.h" // --- YENİ ---
+#include "../../Network/networkmanager.h"
 #include <QWidget>
 
 class QGridLayout;
@@ -26,18 +26,20 @@ private:
   void loadDonationRequests(); // --- YENİ ---
 
   struct DonationRequest {
+    int id; // --- YENİ ---
     QString title;
     QString requester;
-    QString category; // --- YENİ ---
+    QString category;
     QString timeLeft;
     int currentAmount;
     int targetAmount;
+    int selectedAmount; // --- YENİ ---
     QString iconColor;
     bool isCompleted;
   };
 
-  QString currentUsername;    // --- YENİ ---
-  NetworkManager *netManager; // --- YENİ ---
+  QString currentUsername;
+  NetworkManager *netManager;
 
 private slots:
   void on_createRequestBtn_clicked();

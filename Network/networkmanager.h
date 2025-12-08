@@ -10,6 +10,7 @@
 class NetworkManager : public QObject {
   Q_OBJECT
 public:
+  static NetworkManager *instance();
   explicit NetworkManager(QObject *parent = nullptr);
 
   // Kayıt Ol İsteği
@@ -74,19 +75,32 @@ public:
                 std::function<void(bool success, QString message)> callback);
 
   // --- YENİ: Parça Fiyatı Getirme ---
-  void getPrice(const QString &productName,
+  void getPrice(const QString &productName, const QString &category,
                 std::function<void(bool success, QString price, QString source)>
                     callback);
 
+  // --- YENİ: Ürün Arama (Dropdown için) ---
+  void
+  searchProducts(const QString &query, const QString &category,
+                 std::function<void(bool success, QList<QVariantMap> results,
+                                    QString message)>
+                     callback);
+
+  // --- YENİ: Ödeme Başlatma ---
   // --- YENİ: Ödeme Başlatma ---
   void initializePayment(
       const QString &username, int price, const QString &productName,
+      const QString &receiverUsername, int requestId,
       std::function<void(bool success, QString paymentUrl, QString message)>
           callback);
+
+  // --- YENİ: Sunucuyu Durdurma ---
+  void stopServer();
 
 private:
   QNetworkAccessManager *manager;
   const QString BASE_URL = "http://127.0.0.1:3000"; // Node.js sunucu adresiniz
+  static NetworkManager *m_instance;
 };
 
 #endif // NETWORKMANAGER_H

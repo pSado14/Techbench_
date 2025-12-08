@@ -4,6 +4,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkRequest>
+#include <QUrlQuery>
+
+NetworkManager *NetworkManager::m_instance = nullptr;
+
+NetworkManager *NetworkManager::instance() {
+  if (!m_instance) {
+    m_instance = new NetworkManager();
+  }
+  return m_instance;
+}
 
 NetworkManager::NetworkManager(QObject *parent) : QObject(parent) {
   manager = new QNetworkAccessManager(this);
@@ -495,39 +505,85 @@ void NetworkManager::resetPassword(
 }
 
 // --- FİYAT ÇEKME ---
-#include "pricefetcher.h"
-
-// ... (Existing includes)
-
-// --- FİYAT ÇEKME ---
 void NetworkManager::getPrice(
-    const QString &productName,
+    const QString &productName, const QString &category,
     std::function<void(bool, QString, QString)> callback) {
+  QUrl url(BASE_URL + "/get-price");
+  QUrlQuery query;
+  query.addQueryItem("productName", productName);
+  query.addQueryItem("category", category);
+  url.setQuery(query);
 
-  // PriceFetcher nesnesini oluştur
-  // Not: Bu nesne işi bitince silinmeli. QObject tree veya deleteLater ile.
-  // Burada basitçe parent olarak 'this' veriyoruz ama asenkron olduğu için
-  // callback içinde deleteLater diyemeyiz çünkü PriceFetcher sinyal atıyor.
-  // En temizi: PriceFetcher'ı member olarak tutmak veya burada oluşturup
-  // işi bitince kendini silmesini sağlamak.
+  QNetworkRequest request(url);
+  QNetworkReply *reply = manager->get(request);
 
-  PriceFetcher *fetcher = new PriceFetcher(this);
+  connect(reply, &QNetworkReply::finished, [=]() {
+    if (reply->error() == QNetworkReply::NoError) {
+      QByteArray responseData = reply->readAll();
+      QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+      QJsonObject jsonObj = jsonDoc.object();
 
-  connect(fetcher, &PriceFetcher::priceFound, [=](QString price) {
-    // Callback'i çağır
-    // Source şimdilik "Google" veya "Web" diyebiliriz
-    callback(true, price, "Web");
+      bool success = jsonObj["success"].toBool();
+      QString price = jsonObj["price"].toString();
+      QString source = jsonObj["source"].toString();
 
-    // Fetcher'ı temizle
-    fetcher->deleteLater();
+      callback(success, price, source);
+    } else {
+      callback(false, "Hata", "");
+    }
+    reply->deleteLater();
   });
+}
 
-  fetcher->searchPrice(productName);
+// --- ÜRÜN ARAMA (Dropdown için) ---
+void NetworkManager::searchProducts(
+    const QString &query, const QString &category,
+    std::function<void(bool success, QList<QVariantMap> results,
+                       QString message)>
+        callback) {
+  QUrl url(BASE_URL + "/search-products");
+  QUrlQuery q;
+  q.addQueryItem("query", query);
+  if (!category.isEmpty()) {
+    q.addQueryItem("category", category);
+  }
+  url.setQuery(q);
+
+  QNetworkRequest request(url);
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    if (reply->error() == QNetworkReply::NoError) {
+      QByteArray responseData = reply->readAll();
+      QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+      QJsonObject jsonObj = jsonDoc.object();
+
+      bool success = jsonObj["success"].toBool();
+      QString message = "";
+      QList<QVariantMap> results;
+
+      if (success) {
+        QJsonArray jsonArray = jsonObj["results"].toArray();
+        for (const QJsonValue &value : jsonArray) {
+          results.append(value.toObject().toVariantMap());
+        }
+      } else {
+        message = jsonObj["message"].toString();
+      }
+
+      callback(success, results, message);
+    } else {
+      callback(false, {}, "Bağlantı Hatası: " + reply->errorString());
+    }
+    reply->deleteLater();
+  });
 }
 
 // --- ÖDEME BAŞLATMA ---
+// --- ÖDEME BAŞLATMA ---
 void NetworkManager::initializePayment(
     const QString &username, int price, const QString &productName,
+    const QString &receiverUsername, int requestId,
     std::function<void(bool, QString, QString)> callback) {
   QUrl url(BASE_URL + "/payment/initialize");
   QNetworkRequest request(url);
@@ -536,6 +592,8 @@ void NetworkManager::initializePayment(
   QJsonObject json;
   json["price"] = price;
   json["productName"] = productName;
+  json["receiverUsername"] = receiverUsername;
+  json["requestId"] = requestId; // --- YENİ ---
 
   QJsonObject userObj;
   userObj["name"] = username;            // Basitlik için
@@ -570,4 +628,11 @@ void NetworkManager::initializePayment(
     callback(success, paymentUrl, message);
     reply->deleteLater();
   });
+}
+
+// --- SUNUCUYU DURDURMA ---
+void NetworkManager::stopServer() {
+  QUrl url(BASE_URL + "/shutdown");
+  QNetworkRequest request(url);
+  manager->get(request);
 }

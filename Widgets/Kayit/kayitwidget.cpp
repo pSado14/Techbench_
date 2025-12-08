@@ -1,8 +1,7 @@
 #include "kayitwidget.h"
+#include "moderndialogs.h"
 #include "ui_kayitwidget.h"
-#include <QDebug>      // Konsola yazı yazmak için
-#include <QMessageBox> // Uyarı pencereleri için
-
+#include <QDebug> // Konsola yazı yazmak için
 
 KayitWidget::KayitWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::KayitWidget) {
@@ -19,6 +18,7 @@ KayitWidget::KayitWidget(QWidget *parent)
       "   font-weight: bold; "
       "   font-size: 14px; "
       "   border: none; "
+      "   outline: none;"
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
@@ -44,14 +44,14 @@ void KayitWidget::on_kayit_tamamla_buton_clicked() {
   // 2. Boş Alan Kontrolü
   if (kAdi.isEmpty() || email.isEmpty() || sifre1.isEmpty() ||
       sifre2.isEmpty()) {
-    QMessageBox::warning(this, "Hata", "Lütfen tüm alanları doldurunuz.");
+    ModernMessageBox::critical(this, "Hata", "Lütfen tüm alanları doldurunuz.");
     return;
   }
 
   // 3. Şifre Eşleşme Kontrolü
   if (sifre1 != sifre2) {
-    QMessageBox::warning(this, "Hata",
-                         "Girdiğiniz şifreler birbiriyle uyuşmuyor!");
+    ModernMessageBox::critical(this, "Hata",
+                               "Girdiğiniz şifreler birbiriyle uyuşmuyor!");
     return;
   }
 
@@ -63,9 +63,10 @@ void KayitWidget::on_kayit_tamamla_buton_clicked() {
       kAdi, sifre1, email, [=](bool success, QString message) {
         if (success) {
           // --- BAŞARILI ---
-          QMessageBox::information(this, "Başarılı",
-                                   "Hesabınız başarıyla oluşturuldu!\nGiriş "
-                                   "ekranına yönlendiriliyorsunuz.");
+          ModernMessageBox::information(
+              this, "Başarılı",
+              "Hesabınız başarıyla oluşturuldu!\nGiriş "
+              "ekranına yönlendiriliyorsunuz.");
 
           // Formu Temizle
           ui->kullanici_adi_input->clear();
@@ -78,7 +79,7 @@ void KayitWidget::on_kayit_tamamla_buton_clicked() {
         } else {
           // --- HATA ---
           // Sunucudan gelen hatayı (örn: "Kullanıcı adı alınmış") göster
-          QMessageBox::warning(this, "Kayıt Başarısız", message);
+          ModernMessageBox::critical(this, "Kayıt Başarısız", message);
         }
       });
 }

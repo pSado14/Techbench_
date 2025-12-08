@@ -22,6 +22,7 @@ KarsilastirmaWidget::KarsilastirmaWidget(QWidget *parent)
       "   font-weight: bold; "
       "   font-size: 14px; "
       "   border: none; "
+      "   outline: none;"
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");

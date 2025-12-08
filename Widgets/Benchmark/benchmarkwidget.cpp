@@ -1,14 +1,9 @@
-
 #include "benchmarkwidget.h"
-#include "../../Network/networkmanager.h"
 #include "benchmarkworker.h"
+#include "moderndialogs.h"
+#include "networkmanager.h"
 #include "ui_benchmarkwidget.h"
-#include <QDebug>
-#include <QMessageBox>
-#include <QPainter>
-#include <QThread>
-#include <QVBoxLayout>
-#include <QtCharts/QChart>
+
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QPieSeries>
@@ -32,6 +27,7 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
       "   font-weight: bold; "
       "   font-size: 14px; "
       "   border: none; "
+      "   outline: none;"
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }"
@@ -51,6 +47,7 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
       "   font-weight: bold; "
       "   font-size: 12px; "
       "   border: none; "
+      "   outline: none;"
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #ff4b2b, stop:1 #ff416c); }"
@@ -109,8 +106,8 @@ void BenchmarkWidget::on_testi_baslat_buton_clicked() {
   // 0. KONTROL: En az bir kutucuk seçili mi?
   if (!ui->cpu_testi_cb->isChecked() && !ui->gpu_testi_cb_2->isChecked() &&
       !ui->bellek_testi_cb->isChecked()) {
-    QMessageBox::warning(this, "Uyarı",
-                         "Lütfen test etmek için en az bir donanım seçiniz!");
+    ModernMessageBox::critical(
+        this, "Uyarı", "Lütfen test etmek için en az bir donanım seçiniz!");
     return;
   }
 
@@ -243,7 +240,7 @@ void BenchmarkWidget::onWorkerFinished(int cpuScore, int gpuScore,
     ui->henuz_test_baslatilmadi_label->setText("Test tamamlandı.");
   }
 
-  QMessageBox::information(this, "Test Tamamlandı", sonucMesaji);
+  ModernMessageBox::information(this, "Test Tamamlandı", sonucMesaji);
 
   emit testBitti(cpuScore, gpuScore, ramScore);
 }
@@ -404,21 +401,54 @@ void BenchmarkWidget::setupHistoryList() {
       qobject_cast<QVBoxLayout *>(ui->sonuc_gecmisi_frame->layout());
   if (layout) {
     QPushButton *clearBtn = new QPushButton("Geçmişi Temizle");
+    clearBtn->setCursor(Qt::PointingHandCursor);
     clearBtn->setStyleSheet("QPushButton { "
-                            "   background-color: #dc3545; "
+                            "   background-color: #e74c3c; "
                             "   border-radius: 5px; "
                             "   color: white; "
-                            "   padding: 5px 10px; "
+                            "   padding: 8px 15px; "
                             "   font-weight: bold; "
                             "   border: none; "
                             "   margin-top: 5px; "
+                            "   outline: none;"
                             "}"
-                            "QPushButton:hover { background-color: #c82333; }");
+                            "QPushButton:hover { background-color: #c0392b; }");
     layout->addWidget(clearBtn);
 
     connect(clearBtn, &QPushButton::clicked, this,
             &BenchmarkWidget::on_gecmisi_temizle_buton_clicked);
   }
+}
+
+// --- TESTİ İPTAL ET BUTONU ---
+
+void BenchmarkWidget::on_gecmisi_temizle_buton_clicked() {
+  if (m_username.isEmpty()) {
+    ModernMessageBox::critical(this, "Hata", "Önce giriş yapmalısınız.");
+    return;
+  }
+
+  bool reply = ModernMessageBox::question(
+      this, "Geçmişi Sil",
+      "Tüm test geçmişinizi silmek istediğinize emin misiniz?");
+  if (!reply)
+    return;
+
+  // NetworkManager üzerinden silme isteği gönder
+  NetworkManager::instance()->deleteScoreHistory(
+      m_username, [=](bool success, QString message) {
+        if (success) {
+          ModernMessageBox::information(this, "Başarılı",
+                                        "Test geçmişiniz başarıyla silindi.");
+          // Listeyi temizle
+          ui->sonuc_gecmisi_listesi->clear();
+          // Grafikleri sıfırla (isteğe bağlı, ama mantıklı)
+          setupCharts();
+        } else {
+          ModernMessageBox::critical(this, "Hata",
+                                     "Geçmiş silinemedi: " + message);
+        }
+      });
 }
 
 void BenchmarkWidget::updateHistoryList(const QList<QVariantMap> &history) {
@@ -436,29 +466,4 @@ void BenchmarkWidget::updateHistoryList(const QList<QVariantMap> &history) {
     QString itemText = QString("%1: - %2 pts").arg(dateStr).arg(score);
     ui->sonuc_gecmisi_listesi->addItem(itemText);
   }
-}
-
-void BenchmarkWidget::on_gecmisi_temizle_buton_clicked() {
-  if (m_username.isEmpty()) {
-    QMessageBox::warning(this, "Hata", "Önce giriş yapmalısınız.");
-    return;
-  }
-
-  QMessageBox::StandardButton reply;
-  reply = QMessageBox::question(
-      this, "Geçmişi Sil",
-      "Tüm test geçmişinizi silmek istediğinize emin misiniz?",
-      QMessageBox::Yes | QMessageBox::No);
-  if (reply == QMessageBox::No)
-    return;
-
-  // NetworkManager'ı include etmemiz lazım, cpp başında var mı bakalım.
-  // Yoksa ekleyelim. Var gibi görünüyor ama kontrol etmek lazım.
-  // BenchmarkWidget.cpp başında #include "networkmanager.h" yoksa eklemeliyiz.
-  // Şimdilik varsayalım, hata verirse ekleriz.
-  // Aslında MainWindow'da include edilmiş ama burada da lazım.
-  // Bu dosyada NetworkManager kullanılmamış daha önce.
-  // O yüzden hata verebilir.
-  // En iyisi bu fonksiyonu yazarken NetworkManager'ı da include listesine
-  // eklemek.
 }

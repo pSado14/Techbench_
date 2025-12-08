@@ -1,6 +1,8 @@
 #ifndef ANASAYFAWIDGET_H
 #define ANASAYFAWIDGET_H
 
+#include <QComboBox>
+#include <QLabel>
 #include <QProcess>
 #include <QWidget>
 
@@ -24,6 +26,7 @@ public:
   void setToplamPuan(int score);
   void taraVeGuncelle();
   void setPuanlar(int cpuScore, int gpuScore, int ramScore);
+
   void bilgileriSifirla();
   void checkPrice(const QString &productName, const QString &type);
 
@@ -40,6 +43,7 @@ private slots:
 private:
   Ui::AnasayfaWidget *ui;
   QString getHardwareInfo(const QString &cmd, const QStringList &args);
+  QStringList getAllHardwareInfo(const QString &cmd, const QStringList &args);
   void setupCharts();
   void updateCharts(int cpuScore, int gpuScore, int ramScore);
 
@@ -47,6 +51,13 @@ private:
   int m_cpuScore = 0;
   int m_gpuScore = 0;
   int m_ramScore = 0;
+
+  // GPU Seçimi için
+  QComboBox *gpuModelComboBox;
+  QLabel *gpuSelectionLabel;
+
+private slots:
+  void onGpuModelSelected(int index);
 };
 
 #endif // ANASAYFAWIDGET_H

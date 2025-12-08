@@ -13,98 +13,160 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="bagis_kismi_verticalLayout_ana">
-   <item>
-    <spacer name="verticalSpacer_ust_bagis">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item alignment="Qt::AlignmentFlag::AlignHCenter">
-    <widget class="QFrame" name="bagis_kismi_form_frame">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>500</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>500</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: #363a45; border-radius: 8px; padding: 20px;</string>
-     </property>
-     <property name="inputMethodHints">
-      <set>Qt::InputMethodHint::ImhNone</set>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Sunken</enum>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_22">
-      <item>
-       <widget class="QLabel" name="bagis_baslik">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTextEdit" name="destek_metni_sayfa">
-        <property name="styleSheet">
-         <string notr="true">background-color: #495057; border: none; padding: 10px; color: white;</string>
-        </property>
-        <property name="html">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="bagis_miktari_input_sayfa">
-        <property name="placeholderText">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignmentFlag::AlignRight">
-       <widget class="QPushButton" name="bagis_yap_butonu_sayfa_2">
-        <property name="styleSheet">
-         <string notr="true">background-color: #e84393; border-radius: 5px; padding: 10px; font-weight: bold;</string>
-        </property>
-        <property name="text">
-         <string>Bağışı Tamamla</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-  </layout>
+  <property name="styleSheet">
+   <string notr="true">background-color: #2b2b2b; color: white; font-family: 'Segoe UI', sans-serif;</string>
+  </property>
+  <widget class="QFrame" name="bagis_ana_frame">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>1000</width>
+     <height>600</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#bagis_ana_frame {
+    background-color: #2b2b2b;
+    border: none;
+}</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_main">
+    <item>
+     <spacer name="verticalSpacer_ust_bagis">
+      <property name="orientation">
+       <enum>Qt::Orientation::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item alignment="Qt::AlignmentFlag::AlignHCenter">
+     <widget class="QFrame" name="bagis_kismi_form_frame">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>500</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>500</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">#bagis_kismi_form_frame {
+    background-color: #2b2e38;
+    border-radius: 15px;
+    border: 1px solid #3c404d;
+}
+QLabel { background-color: transparent; color: #ffffff; }</string>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Sunken</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_22">
+       <item>
+        <widget class="QLabel" name="bagis_baslik">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="destek_metni_sayfa">
+         <property name="styleSheet">
+          <string notr="true">background-color: #495057; border: none; padding: 10px; color: white;</string>
+         </property>
+         <property name="html">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="bagis_miktari_input_sayfa">
+         <property name="placeholderText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignmentFlag::AlignRight">
+        <widget class="QPushButton" name="bagis_yap_butonu_sayfa_2">
+         <property name="styleSheet">
+           <string notr="true">QPushButton {
+    background-color: #363a45;
+    color: white;
+    border: 1px solid #3c404d;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 13px;
+}
+QPushButton:hover {
+    background-color: #4facfe;
+    border: 1px solid #4facfe;
+}</string>
+         </property>
+         <property name="text">
+          <string>Bağışı Tamamla</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item alignment="Qt::AlignmentFlag::AlignHCenter">
+     <widget class="QFrame" name="info_frame">
+      <property name="minimumSize">
+       <size>
+        <width>500</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">#info_frame {
+    background-color: #2b2e38;
+    border-radius: 15px;
+    border: 1px solid #3c404d;
+}
+QLabel { background-color: transparent; color: #ffffff; }</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_info">
+       <item>
+        <widget class="QLabel" name="info_baslik">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ffffff;&quot;&gt;Uygulama Hakkında Temel Sorular&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Orientation::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
  </widget>
  <resources/>
  <connections/>

@@ -1,17 +1,15 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include <QDebug>
-#include <QMessageBox>
-
-// --- TÜM SAYFA WIDGET'LARINI VE NETWORK MANAGER'I DAHİL EDİYORUZ ---
 #include "anasayfawidget.h"
 #include "bagiswidget.h"
 #include "benchmarkwidget.h"
 #include "giriswidget.h"
 #include "karsilastirmawidget.h"
 #include "kayitwidget.h"
+#include "moderndialogs.h"
 #include "networkmanager.h"
+#include "ui_mainwindow.h"
 #include "yardimwidget.h"
+
 
 // ===============================================
 // CONSTRUCTOR / DESTRUCTOR
@@ -63,36 +61,34 @@ MainWindow::~MainWindow() { delete ui; }
 // HESAP SİLME SLOTU
 // ===============================================
 void MainWindow::on_hesapSilmeIstegi_geldi() {
-  QMessageBox::StandardButton reply;
-  reply =
-      QMessageBox::question(this, "Hesap Silme",
-                            "Hesabınızı kalıcı olarak silmek üzeresiniz!\nBu "
-                            "işlem geri alınamaz. Emin misiniz?",
-                            QMessageBox::Yes | QMessageBox::No);
+  bool reply = ModernMessageBox::question(
+      this, "Hesap Silme",
+      "Hesabınızı kalıcı olarak silmek üzeresiniz!\nBu işlem geri alınamaz. "
+      "Emin misiniz?");
 
-  if (reply == QMessageBox::Yes) {
+  if (reply) {
 
     if (currentUsername.isEmpty()) {
-      QMessageBox::warning(this, "Hata", "Kullanıcı bilgisi bulunamadı.");
+      ModernMessageBox::critical(this, "Hata", "Kullanıcı bilgisi bulunamadı.");
       return;
     }
 
     // Node.js'e silme isteği gönder
-    netManager->deleteAccount(
-        currentUsername, [=](bool success, QString message) {
-          if (success) {
-            QMessageBox::information(this, "Başarılı",
-                                     "Hesabınız silindi. Çıkış yapılıyor.");
+    netManager->deleteAccount(currentUsername, [=](bool success,
+                                                   QString message) {
+      if (success) {
+        ModernMessageBox::information(this, "Başarılı",
+                                      "Hesabınız silindi. Çıkış yapılıyor.");
 
-            // Çıkış işlemlerini yap
-            setLoginState(false);
-            m_anasayfa->bilgileriSifirla();
-            currentUsername = "";
-            ui->stackedWidget->setCurrentWidget(m_anasayfa);
-          } else {
-            QMessageBox::critical(this, "Hata", "Silinemedi: " + message);
-          }
-        });
+        // Çıkış işlemlerini yap
+        setLoginState(false);
+        m_anasayfa->bilgileriSifirla();
+        currentUsername = "";
+        ui->stackedWidget->setCurrentWidget(m_anasayfa);
+      } else {
+        ModernMessageBox::critical(this, "Hata", "Silinemedi: " + message);
+      }
+    });
   }
 }
 
@@ -150,12 +146,10 @@ void MainWindow::setLoginState(bool loggedIn) {
 void MainWindow::on_girisyapbuton_clicked() {
   if (userIsLoggedIn) {
     // --- ÇIKIŞ İŞLEMİ ---
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Çıkış",
-                                  "Çıkış yapmak istediğinize emin misiniz?",
-                                  QMessageBox::Yes | QMessageBox::No);
+    bool reply = ModernMessageBox::question(
+        this, "Çıkış", "Çıkış yapmak istediğinize emin misiniz?");
 
-    if (reply == QMessageBox::Yes) {
+    if (reply) {
       setLoginState(false);
 
       m_anasayfa->bilgileriSifirla(); // Bilgileri temizle
@@ -166,7 +160,7 @@ void MainWindow::on_girisyapbuton_clicked() {
                                            // temizle ve uyar
       m_bagis->setKullaniciAdi(""); // --- YENİ: Bağış sayfasını sıfırla ---
 
-      QMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
+      ModernMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
       ui->stackedWidget->setCurrentWidget(m_anasayfa);
     }
   } else {
@@ -223,67 +217,65 @@ void MainWindow::setupMenuButtons() {
 
   // --- SİNYAL BAĞLANTILARI ---
   // 1. Giriş Başarılı
-  connect(
-      m_giris, &GirisWidget::girisBasarili, this,
-      [=](QString username, QVariantMap userData) {
-        currentUsername = username; // KULLANICI ADINI KAYDET
+  connect(m_giris, &GirisWidget::girisBasarili, this,
+          [=](QString username, QVariantMap userData) {
+            currentUsername = username; // KULLANICI ADINI KAYDET
 
-        m_anasayfa->setKullaniciBilgileri(username);
-        m_karsilastirma->setKullaniciBilgileri(username);
-        m_bagis->setKullaniciAdi(username);
+            m_anasayfa->setKullaniciBilgileri(username);
+            m_karsilastirma->setKullaniciBilgileri(username);
+            m_bagis->setKullaniciAdi(username);
 
-        ui->stackedWidget->setCurrentWidget(m_anasayfa);
-        updateButtonStyles(ui->anasayfabuton);
-        setLoginState(true);
+            ui->stackedWidget->setCurrentWidget(m_anasayfa);
+            updateButtonStyles(ui->anasayfabuton);
+            setLoginState(true);
 
-        // Giriş yapınca otomatik tara - İPTAL EDİLDİ (Kullanıcı isteği)
-        // m_anasayfa->taraVeGuncelle();
+            // Giriş yapınca otomatik tara - İPTAL EDİLDİ (Kullanıcı isteği)
+            // m_anasayfa->taraVeGuncelle();
 
-        // EĞER VERİTABANINDAN GELEN VERİ VARSA ONU KULLAN
-        if (!userData.isEmpty()) {
-          QString cpu = userData["cpu"].toString();
-          QString gpu = userData["gpu"].toString();
-          QString ram = userData["ram"].toString();
-          int score = userData["score"].toInt();
+            if (!userData.isEmpty()) {
+              QString cpu = userData["cpu"].toString();
+              QString gpu = userData["gpu"].toString();
+              QString ram = userData["ram"].toString();
+              int score = userData["score"].toInt();
 
-          qDebug() << "Login UserData Content:";
-          qDebug() << "  CPU:" << cpu;
-          qDebug() << "  GPU:" << gpu;
-          qDebug() << "  RAM:" << ram;
-          qDebug() << "  Score:" << score;
+              qDebug() << "Login UserData Content:";
+              qDebug() << "  CPU:" << cpu;
+              qDebug() << "  GPU:" << gpu;
+              qDebug() << "  RAM:" << ram;
+              qDebug() << "  Score:" << score;
 
-          if (!cpu.isEmpty() && !gpu.isEmpty() && !ram.isEmpty()) {
-            qDebug() << "Veritabanından sistem bilgileri çekildi:" << cpu << gpu
-                     << ram << "Skor:" << score;
+              if (!cpu.isEmpty() && !gpu.isEmpty() && !ram.isEmpty()) {
+                qDebug() << "Veritabanından sistem bilgileri çekildi:" << cpu
+                         << gpu << ram << "Skor:" << score;
 
-            // Anasayfa'yı güncelle
-            m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
-            m_anasayfa->setToplamPuan(score); // <-- YENİ: Toplam puanı ayarla
+                // Anasayfa'yı güncelle
+                m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
+                m_anasayfa->setToplamPuan(score);
 
-            // Karşılaştırma Merkezi'ni güncelle
-            m_karsilastirma->setSizinSisteminiz(cpu, gpu, ram);
-            m_karsilastirma->setSizinPuaniniz(score); // <-- YENİ: Puanı ayarla
-          } else {
-            qDebug() << "Sistem bilgileri eksik, arayüz güncellenmedi.";
-          }
-        } else {
-          qDebug() << "UserData is empty!";
-        }
-
-        // --- YENİ: Test Geçmişini Çek ---
-        netManager->getScoreHistory(
-            username,
-            [=](bool success, QList<QVariantMap> history, QString message) {
-              if (success) {
-                m_benchmark->updateHistoryList(history); // <-- GÜNCELLENDİ
+                // Karşılaştırma Merkezi'ni güncelle
+                m_karsilastirma->setSizinSisteminiz(cpu, gpu, ram);
+                m_karsilastirma->setSizinPuaniniz(score);
               } else {
-                qDebug() << "Geçmiş çekilemedi:" << message;
+                qDebug() << "Sistem bilgileri eksik, arayüz güncellenmedi.";
               }
-            });
+            } else {
+              qDebug() << "UserData is empty!";
+            }
 
-        // Benchmark widget'a kullanıcı adını bildir (Silme işlemi için)
-        m_benchmark->setUsername(username);
-      });
+            // --- YENİ: Test Geçmişini Çek ---
+            netManager->getScoreHistory(
+                username,
+                [=](bool success, QList<QVariantMap> history, QString message) {
+                  if (success) {
+                    m_benchmark->updateHistoryList(history); // <-- GÜNCELLENDİ
+                  } else {
+                    qDebug() << "Geçmiş çekilemedi:" << message;
+                  }
+                });
+
+            // Benchmark widget'a kullanıcı adını bildir (Silme işlemi için)
+            m_benchmark->setUsername(username);
+          });
 
   // 2. Anasayfa'daki "Hesabı Sil" butonu bağlantısı
   connect(m_anasayfa, &AnasayfaWidget::hesapSilmeTiklandi, this,
@@ -341,17 +333,6 @@ void MainWindow::setupMenuButtons() {
           });
 
   // 4. Fiyat Sorgulama
-  connect(m_anasayfa, &AnasayfaWidget::priceCheckRequested, this,
-          [=](QString componentName, QString type) {
-            netManager->getPrice(componentName, [=](bool success, QString price,
-                                                    QString source) {
-              if (success) {
-                m_anasayfa->setPrice(type, price, source);
-              } else {
-                m_anasayfa->setPrice(type, "Bulunamadı", "");
-              }
-            });
-          });
 
   connect(m_benchmark, &BenchmarkWidget::testBitti, m_anasayfa,
           &AnasayfaWidget::setPuanlar);
@@ -473,8 +454,9 @@ void MainWindow::on_yardimbuton_clicked() {
 }
 void MainWindow::on_bagisyapbuton_clicked() {
   if (!userIsLoggedIn) {
-    QMessageBox::warning(this, "Erişim Engellendi",
-                         "Bağış sayfasına erişmek için lütfen giriş yapınız.");
+    ModernMessageBox::critical(
+        this, "Erişim Engellendi",
+        "Bağış sayfasına erişmek için lütfen giriş yapınız.");
     ui->stackedWidget->setCurrentWidget(m_giris);
     updateButtonStyles(nullptr);
     return;
