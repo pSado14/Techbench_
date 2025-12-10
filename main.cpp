@@ -18,6 +18,17 @@ int main(int argc, char *argv[]) {
 
   QNetworkProxyFactory::setUseSystemConfiguration(true);
 
+  // Global stylesheet - Focus outline/border'ı kaldır
+  a.setStyleSheet("QPushButton:focus { outline: none; border: none; }"
+                  "QPushButton:hover { outline: none; }"
+                  "QToolButton:focus { outline: none; border: none; }"
+                  "QLabel:focus { outline: none; border: none; }"
+                  "QTreeWidget:focus { outline: none; }"
+                  "QListWidget:focus { outline: none; }"
+                  "QLineEdit:focus { outline: none; }"
+                  "QComboBox:focus { outline: none; }"
+                  "*:focus { outline: none; }");
+
   printf("Creating MainWindow...\n");
   fflush(stdout);
   MainWindow w;

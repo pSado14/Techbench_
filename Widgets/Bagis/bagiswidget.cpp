@@ -32,6 +32,8 @@ void BagisWidget::setKullaniciAdi(const QString &username) {
   currentUsername = username;
 }
 
+void BagisWidget::setEmail(const QString &email) { currentEmail = email; }
+
 void BagisWidget::setupUiProgrammatically() {
   // 1. Clean existing UI
   QList<QWidget *> children = findChildren<QWidget *>();
@@ -188,7 +190,7 @@ void BagisWidget::loadDonationRequests() {
             req.id = reqData["id"].toInt();
             req.title = reqData["title"].toString();
             req.requester = reqData["username"].toString();
-            req.timeLeft = "30 Gün Kaldı";
+            // req.timeLeft = "30 Gün Kaldı"; // Removed as per user request
             req.currentAmount =
                 reqData["collected_amount"]
                     .toDouble(); // toInt() "910.00" için 0 dönebilir
@@ -269,8 +271,7 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
   cardLayout->addStretch();
 
   // Info
-  QLabel *requester = new QLabel(
-      QString("İsteyen: %1   %2").arg(request.requester, request.timeLeft));
+  QLabel *requester = new QLabel(QString("İsteyen: %1").arg(request.requester));
   requester->setStyleSheet(
       "color: gray; font-size: 11px; background: transparent;");
   cardLayout->addWidget(requester);
@@ -417,8 +418,9 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
     connect(supportBtn, &QPushButton::clicked, this, [=]() {
       int amountToDonate = valueButton->text().toInt();
       netManager->initializePayment(
-          currentUsername, amountToDonate, request.title, request.requester,
-          request.id, [=](bool success, QString paymentUrl, QString message) {
+          currentUsername, currentEmail, amountToDonate, request.title,
+          request.requester, request.id,
+          [=](bool success, QString paymentUrl, QString message) {
             if (success) {
               QDesktopServices::openUrl(QUrl(paymentUrl));
             } else {

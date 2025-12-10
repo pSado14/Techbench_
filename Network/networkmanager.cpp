@@ -614,8 +614,8 @@ void NetworkManager::searchProducts(
 
 // --- ÖDEME BAŞLATMA ---
 void NetworkManager::initializePayment(
-    const QString &username, int price, const QString &productName,
-    const QString &receiverUsername, int requestId,
+    const QString &username, const QString &email, int price,
+    const QString &productName, const QString &receiverUsername, int requestId,
     std::function<void(bool, QString, QString)> callback) {
   QUrl url(BASE_URL + "/payment/initialize");
   QNetworkRequest request(url);
@@ -629,7 +629,7 @@ void NetworkManager::initializePayment(
 
   QJsonObject userObj;
   userObj["name"] = username;
-  userObj["email"] = "user@example.com";
+  userObj["email"] = email;
   json["user"] = userObj;
 
   QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());

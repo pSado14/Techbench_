@@ -352,7 +352,7 @@ void BenchmarkWidget::showResultCharts(int cpu, int gpu, int ram) {
 
   // GPU (Orta) - Flat Red
   if (ui->gpu_testi_cb_2->isChecked()) {
-    addPieSeries(m_detectedGpuName, gpu, QColor("#e74c3c"), 0.5);
+    addPieSeries("GPU", gpu, QColor("#e74c3c"), 0.5);
   }
 
   // RAM (Sağ) - Flat Yellow (Resimdeki gibi)

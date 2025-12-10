@@ -92,10 +92,10 @@ public:
                      callback);
 
   // --- YENİ: Ödeme Başlatma ---
-  // --- YENİ: Ödeme Başlatma ---
   void initializePayment(
-      const QString &username, int price, const QString &productName,
-      const QString &receiverUsername, int requestId,
+      const QString &username, const QString &email, int price,
+      const QString &productName, const QString &receiverUsername,
+      int requestId,
       std::function<void(bool success, QString paymentUrl, QString message)>
           callback);
 

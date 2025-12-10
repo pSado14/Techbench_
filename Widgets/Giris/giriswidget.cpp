@@ -37,6 +37,18 @@ GirisWidget::GirisWidget(QWidget *parent)
       "}"
       "QPushButton:hover { color: #4facfe; }");
 
+  // Transparent Style for "Şifremi Unuttum" with hover animation
+  ui->sifre_unuttum_butonu_sayfa->setStyleSheet(
+      "QPushButton { "
+      "   background-color: transparent; "
+      "   color: white; "
+      "   text-align: left; "
+      "   padding: 0; "
+      "   border: none; "
+      "   outline: none;"
+      "}"
+      "QPushButton:hover { color: #4facfe; }");
+
   // Network Manager'ı Başlat
   netManager = new NetworkManager(this);
 

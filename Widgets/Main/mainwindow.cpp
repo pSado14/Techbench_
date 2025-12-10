@@ -10,7 +10,6 @@
 #include "ui_mainwindow.h"
 #include "yardimwidget.h"
 
-
 // ===============================================
 // CONSTRUCTOR / DESTRUCTOR
 // ===============================================
@@ -159,6 +158,7 @@ void MainWindow::on_girisyapbuton_clicked() {
       m_karsilastirma->showLoginWarning(); // <-- YENİ: Çıkış yapınca listeyi
                                            // temizle ve uyar
       m_bagis->setKullaniciAdi(""); // --- YENİ: Bağış sayfasını sıfırla ---
+      m_bagis->setEmail("");        // --- YENİ: Email'i de sıfırla ---
 
       ModernMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
       ui->stackedWidget->setCurrentWidget(m_anasayfa);
@@ -224,6 +224,10 @@ void MainWindow::setupMenuButtons() {
             m_anasayfa->setKullaniciBilgileri(username);
             m_karsilastirma->setKullaniciBilgileri(username);
             m_bagis->setKullaniciAdi(username);
+
+            // Email bilgisini userData'dan al ve set et
+            QString email = userData["email"].toString();
+            m_bagis->setEmail(email);
 
             ui->stackedWidget->setCurrentWidget(m_anasayfa);
             updateButtonStyles(ui->anasayfabuton);

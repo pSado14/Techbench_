@@ -18,6 +18,7 @@ public:
   ~BagisWidget();
 
   void setKullaniciAdi(const QString &username); // --- YENİ ---
+  void setEmail(const QString &email);           // --- YENİ ---
 
 private:
   Ui::BagisWidget *ui;
@@ -39,6 +40,7 @@ private:
   };
 
   QString currentUsername;
+  QString currentEmail;
   NetworkManager *netManager;
 
 private slots:
