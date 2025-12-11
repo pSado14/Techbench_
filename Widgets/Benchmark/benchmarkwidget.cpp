@@ -32,6 +32,7 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }"
       "QPushButton:disabled { background-color: #555; color: #aaa; }");
+  ui->testi_baslat_buton->setCursor(Qt::PointingHandCursor);
 
   // Modern Red Gradient for "Testi İptal Et" (if it exists, assuming it does
   // based on grep) Note: If testi_iptal_et_buton is not in the UI file yet,
@@ -52,6 +53,7 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #ff4b2b, stop:1 #ff416c); }"
       "QPushButton:disabled { background-color: #555; color: #aaa; }");
+  ui->testi_iptal_et_buton->setCursor(Qt::PointingHandCursor);
 
   // Başlangıçta butonu devre dışı bırak (Sistem bilgisi taranmalı)
   ui->testi_baslat_buton->setEnabled(false);

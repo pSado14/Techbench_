@@ -9,7 +9,6 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
-
 class ModernInputDialog : public QDialog {
   Q_OBJECT
 public:
@@ -36,10 +35,12 @@ public:
                        const QString &text);
   static bool question(QWidget *parent, const QString &title,
                        const QString &text);
+  static void warning(QWidget *parent, const QString &title,
+                      const QString &text);
 
 private:
   void setupUi(const QString &title, const QString &text, bool isError,
-               bool isQuestion = false);
+               bool isQuestion = false, bool isWarning = false);
 };
 
 #endif // MODERNDIALOGS_H

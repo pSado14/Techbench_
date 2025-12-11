@@ -22,6 +22,7 @@ KayitWidget::KayitWidget(QWidget *parent)
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
+  ui->kayit_tamamla_buton->setCursor(Qt::PointingHandCursor);
 
   // --- 1. Network Manager'ı Başlatıyoruz ---
   netManager = new NetworkManager(this);
@@ -29,6 +30,8 @@ KayitWidget::KayitWidget(QWidget *parent)
   // İsterseniz şifre alanlarını sansürlü (yıldızlı) yapabilirsiniz:
   ui->sifre_input->setEchoMode(QLineEdit::Password);
   ui->sifre_tekrar_input->setEchoMode(QLineEdit::Password);
+
+  ui->girise_don_buton->setCursor(Qt::PointingHandCursor);
 }
 
 KayitWidget::~KayitWidget() { delete ui; }

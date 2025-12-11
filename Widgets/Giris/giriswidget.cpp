@@ -23,6 +23,7 @@ GirisWidget::GirisWidget(QWidget *parent)
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
+  ui->giris_yap_butonu_sayfa->setCursor(Qt::PointingHandCursor);
 
   // Modern Blue Gradient for "Kayıt Ol"
   // Transparent Style for "Kayıt Ol" (Like Forgot Password)
@@ -36,6 +37,7 @@ GirisWidget::GirisWidget(QWidget *parent)
       "   outline: none;"
       "}"
       "QPushButton:hover { color: #4facfe; }");
+  ui->kayit_ol_butonu_sayfa->setCursor(Qt::PointingHandCursor);
 
   // Transparent Style for "Şifremi Unuttum" with hover animation
   ui->sifre_unuttum_butonu_sayfa->setStyleSheet(
@@ -48,6 +50,7 @@ GirisWidget::GirisWidget(QWidget *parent)
       "   outline: none;"
       "}"
       "QPushButton:hover { color: #4facfe; }");
+  ui->sifre_unuttum_butonu_sayfa->setCursor(Qt::PointingHandCursor);
 
   // Network Manager'ı Başlat
   netManager = new NetworkManager(this);

@@ -26,6 +26,7 @@ KarsilastirmaWidget::KarsilastirmaWidget(QWidget *parent)
       "}"
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }");
+  ui->karsilastir_buton->setCursor(Qt::PointingHandCursor);
 
   // Başlangıçta puanları 0 yap
   ui->sizin_puan_deger->setText("0 pts");

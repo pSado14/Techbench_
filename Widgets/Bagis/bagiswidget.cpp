@@ -83,6 +83,7 @@ void BagisWidget::setupUiProgrammatically() {
 
   QPushButton *createRequestBtn =
       new QPushButton("+ Bağış İsteği oluştur", this);
+  createRequestBtn->setCursor(Qt::PointingHandCursor);
   createRequestBtn->setFixedSize(180, 40);
   createRequestBtn->setStyleSheet(
       "QPushButton { "
@@ -102,6 +103,7 @@ void BagisWidget::setupUiProgrammatically() {
 
   // --- Refresh Button ---
   QPushButton *refreshBtn = new QPushButton(this);
+  refreshBtn->setCursor(Qt::PointingHandCursor);
   refreshBtn->setFixedSize(40, 40);
   refreshBtn->setIcon(QIcon(":/Assets/refresh.png"));
   refreshBtn->setIconSize(QSize(24, 24));
@@ -384,6 +386,7 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
       "color: white; font-size: 11px; background: transparent;");
 
   QPushButton *minusBtn = new QPushButton("-");
+  minusBtn->setCursor(Qt::PointingHandCursor);
   minusBtn->setFixedSize(30, 30);
   minusBtn->setStyleSheet("background-color: #333; color: white; "
                           "border-radius: 5px; border: none; outline: none;");
@@ -391,6 +394,7 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
   // --- DEĞİŞİKLİK: Label yerine Button kullanıyoruz ---
   QPushButton *valueButton =
       new QPushButton(QString::number(request.selectedAmount));
+  valueButton->setCursor(Qt::PointingHandCursor);
   valueButton->setFixedSize(60, 30); // Biraz daha geniş
   valueButton->setStyleSheet(
       "QPushButton { "
@@ -401,6 +405,7 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
       "#4facfe; }");
 
   QPushButton *plusBtn = new QPushButton("+");
+  plusBtn->setCursor(Qt::PointingHandCursor);
   plusBtn->setFixedSize(30, 30);
   plusBtn->setStyleSheet("background-color: #333; color: white; border-radius: "
                          "5px; border: none; outline: none;");
@@ -453,6 +458,7 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
   });
 
   QPushButton *supportBtn = new QPushButton();
+  supportBtn->setCursor(Qt::PointingHandCursor);
   supportBtn->setFixedHeight(40);
 
   if (percent >= 100) {

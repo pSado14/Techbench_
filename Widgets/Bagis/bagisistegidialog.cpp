@@ -1,4 +1,5 @@
 #include "bagisistegidialog.h"
+#include "moderndialogs.h"
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -262,7 +263,7 @@ void BagisIstegiDialog::populateTable() {
 void BagisIstegiDialog::onSelectClicked() {
   int row = tableWidget->currentRow();
   if (row < 0) {
-    QMessageBox::warning(this, "Uyarı", "Lütfen bir parça seçiniz.");
+    ModernMessageBox::warning(this, "Uyarı", "Lütfen bir parça seçiniz.");
     return;
   }
 

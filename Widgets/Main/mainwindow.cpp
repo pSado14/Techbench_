@@ -9,6 +9,7 @@
 #include "networkmanager.h"
 #include "ui_mainwindow.h"
 #include "yardimwidget.h"
+#include <QPushButton>
 
 // ===============================================
 // CONSTRUCTOR / DESTRUCTOR
@@ -20,7 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
 
   // Buton boyutlarını eşitle
   ui->girisyapbuton->setFixedWidth(115);
+  ui->girisyapbuton->setCursor(Qt::PointingHandCursor);
   ui->bagisyapbuton->setFixedWidth(115);
+  ui->bagisyapbuton->setCursor(Qt::PointingHandCursor);
 
   // --- 1. NetworkManager'ı Başlat ---
   netManager = new NetworkManager(this);
@@ -193,6 +196,10 @@ void MainWindow::setupPages() {
 void MainWindow::setupMenuButtons() {
   menuButtons << ui->anasayfabuton << ui->benchmarkbuton
               << ui->karsilastirmabuton << ui->yardimbuton;
+
+  for (QPushButton *btn : menuButtons) {
+    btn->setCursor(Qt::PointingHandCursor);
+  }
 
   // --- BUTON BAĞLANTILARI ---
   connect(ui->anasayfabuton, &QPushButton::clicked, this,
@@ -395,30 +402,33 @@ void MainWindow::on_anasayfabuton_clicked() {
 }
 
 void MainWindow::on_karsilastirmabuton_clicked() {
+  if (!userIsLoggedIn) {
+    ModernMessageBox::information(
+        this, "Giriş Gerekli",
+        "Karşılaştırma özelliğini kullanmak için lütfen giriş yapınız.");
+    ui->stackedWidget->setCurrentWidget(m_giris);
+    updateButtonStyles(nullptr);
+    return;
+  }
+
   ui->stackedWidget->setCurrentWidget(m_karsilastirma);
   updateButtonStyles(ui->karsilastirmabuton);
 
   // Sayfa açılınca listeyi güncelle
-  if (userIsLoggedIn) {
-    qDebug() << "Karsilastirma butonu tiklandi. Kullanici giris yapmis. "
-                "Rakipler isteniyor...";
-    netManager->getRivals(
-        [=](bool success, QList<QVariantMap> rivals, QString message) {
-          if (success) {
-            qDebug() << "Rakipler basariyla alindi. Sayi:" << rivals.size();
-            m_karsilastirma->updateRivalsList(rivals);
-          } else {
-            qDebug() << "Rakipler alınamadı (Buton Tıklama):" << message;
-          }
-        });
-  } else {
-    qDebug() << "Karsilastirma butonu tiklandi. Kullanici giris "
-                "YAPMAMIS.";
-    m_karsilastirma->showLoginWarning();
-  }
+  qDebug() << "Karsilastirma butonu tiklandi. Kullanici giris yapmis. "
+              "Rakipler isteniyor...";
+  netManager->getRivals(
+      [=](bool success, QList<QVariantMap> rivals, QString message) {
+        if (success) {
+          qDebug() << "Rakipler basariyla alindi. Sayi:" << rivals.size();
+          m_karsilastirma->updateRivalsList(rivals);
+        } else {
+          qDebug() << "Rakipler alınamadı (Buton Tıklama):" << message;
+        }
+      });
 
   // Geçmişi de güncelle
-  if (userIsLoggedIn && !currentUsername.isEmpty()) {
+  if (!currentUsername.isEmpty()) {
     netManager->getScoreHistory(
         currentUsername,
         [=](bool success, QList<QVariantMap> history, QString message) {

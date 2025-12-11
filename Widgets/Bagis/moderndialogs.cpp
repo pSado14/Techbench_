@@ -127,8 +127,15 @@ bool ModernMessageBox::question(QWidget *parent, const QString &title,
   return dialog.exec() == QDialog::Accepted;
 }
 
+void ModernMessageBox::warning(QWidget *parent, const QString &title,
+                               const QString &text) {
+  ModernMessageBox dialog(parent);
+  dialog.setupUi(title, text, false, false, true);
+  dialog.exec();
+}
+
 void ModernMessageBox::setupUi(const QString &title, const QString &text,
-                               bool isError, bool isQuestion) {
+                               bool isError, bool isQuestion, bool isWarning) {
   QVBoxLayout *mainLayout = new QVBoxLayout(this);
   mainLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -146,15 +153,16 @@ void ModernMessageBox::setupUi(const QString &title, const QString &text,
   // Title
   QLabel *titleLabel = new QLabel(title);
   QString titleColor =
-      isError ? "#ff4d4d" : (isQuestion ? "#f1c40f" : "#4facfe");
-  titleLabel->setStyleSheet(
-      QString("color: %1; font-size: 16px; font-weight: bold;")
-          .arg(titleColor));
+      isError ? "#ff4d4d" : ((isQuestion || isWarning) ? "#f1c40f" : "#4facfe");
+  titleLabel->setStyleSheet(QString("color: %1; font-size: 16px; font-weight: "
+                                    "bold; background: transparent;")
+                                .arg(titleColor));
   layout->addWidget(titleLabel);
 
   // Text
   QLabel *msgLabel = new QLabel(text);
-  msgLabel->setStyleSheet("color: #bec3cd; font-size: 13px;");
+  msgLabel->setStyleSheet(
+      "color: #bec3cd; font-size: 13px; background: transparent;");
   msgLabel->setWordWrap(true);
   layout->addWidget(msgLabel);
 

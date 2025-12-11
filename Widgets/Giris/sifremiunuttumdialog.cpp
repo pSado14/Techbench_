@@ -25,6 +25,7 @@ SifremiUnuttumDialog::SifremiUnuttumDialog(NetworkManager *networkManager,
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }"
       "QPushButton:disabled { background-color: #cccccc; color: #666666; }");
+  ui->kodGonderButon->setCursor(Qt::PointingHandCursor);
 
   // Modern Blue Gradient for "Şifreyi Yenile"
   ui->sifreYenileButon->setStyleSheet(
@@ -41,6 +42,7 @@ SifremiUnuttumDialog::SifremiUnuttumDialog(NetworkManager *networkManager,
       "QPushButton:hover { background-color: qlineargradient(spread:pad, "
       "x1:0, y1:0, x2:1, y2:0, stop:0 #00f2fe, stop:1 #4facfe); }"
       "QPushButton:disabled { background-color: #cccccc; color: #666666; }");
+  ui->sifreYenileButon->setCursor(Qt::PointingHandCursor);
 
   ui->stackedWidget->setCurrentIndex(0); // İlk sayfa: E-posta girişi
 

@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QProcess>
+#include <QPushButton>
 #include <QRegularExpression>
 #include <QVBoxLayout>
 #include <QtCharts/QBarCategoryAxis>
@@ -17,9 +18,13 @@
 #include <QtCharts/QStackedBarSeries>
 #include <QtCharts/QValueAxis>
 
+
 AnasayfaWidget::AnasayfaWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::AnasayfaWidget) {
   ui->setupUi(this);
+
+  ui->sistemibilgilerinitarabuton->setCursor(Qt::PointingHandCursor);
+  ui->hesapSilButon->setCursor(Qt::PointingHandCursor);
 
   setupCharts(); // <-- Charts kurulumu
   bilgileriSifirla();
