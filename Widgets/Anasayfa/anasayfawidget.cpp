@@ -105,6 +105,14 @@ QString AnasayfaWidget::getHardwareInfo(const QString &cmd,
       continue;
     if (cleanLine.startsWith("ChassisTypes", Qt::CaseInsensitive))
       continue;
+    if (cleanLine.startsWith("L3CacheSize", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("L2CacheSize", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("SMBIOSMemoryType", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("VideoMemoryType", Qt::CaseInsensitive))
+      continue;
 
     return cleanLine; // İlk geçerli veri
   }
@@ -149,6 +157,14 @@ QStringList AnasayfaWidget::getAllHardwareInfo(const QString &cmd,
       continue;
     if (cleanLine.startsWith("ChassisTypes", Qt::CaseInsensitive))
       continue;
+    if (cleanLine.startsWith("L3CacheSize", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("L2CacheSize", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("SMBIOSMemoryType", Qt::CaseInsensitive))
+      continue;
+    if (cleanLine.startsWith("VideoMemoryType", Qt::CaseInsensitive))
+      continue;
 
     validLines.append(cleanLine);
   }
@@ -179,6 +195,38 @@ void AnasayfaWidget::taraVeGuncelle() {
   if (cpuSpeedRaw != "0") {
     double speedGHz = cpuSpeedRaw.toDouble() / 1000.0;
     ui->cpu_clock_label->setText(QString::number(speedGHz, 'f', 1) + " GHz");
+  }
+
+  // Önbellek (L3 Cache)
+  QString l3Cache = getHardwareInfo("wmic", {"cpu", "get", "L3CacheSize"});
+  QString cacheText = "-";
+  if (l3Cache != "0" && !l3Cache.isEmpty()) {
+    double l3MB = l3Cache.toDouble() / 1024.0;
+    if (l3MB >= 1.0) {
+      cacheText = QString::number(l3MB, 'f', 1) + " MB";
+    } else {
+      cacheText = l3Cache + " KB";
+    }
+  } else {
+    // L3 yoksa L2 dene
+    QString l2Cache = getHardwareInfo("wmic", {"cpu", "get", "L2CacheSize"});
+    if (l2Cache != "0" && !l2Cache.isEmpty()) {
+      double l2MB = l2Cache.toDouble() / 1024.0;
+      if (l2MB >= 1.0) {
+        cacheText = QString::number(l2MB, 'f', 1) + " MB";
+      } else {
+        cacheText = l2Cache + " KB";
+      }
+    }
+  }
+
+  // Label'ları güncelle (Multi-line)
+  ui->cpu_hiz_label->setText("Hız:<br>Önbellek:");
+  if (ui->cpu_clock_label->text() != "-") {
+    ui->cpu_clock_label->setText(ui->cpu_clock_label->text() + "<br>" +
+                                 cacheText);
+  } else {
+    ui->cpu_clock_label->setText("-<br>" + cacheText);
   }
 
   // ==========================
@@ -238,11 +286,33 @@ void AnasayfaWidget::taraVeGuncelle() {
   // NVIDIA GPU Clock Hızı (nvidia-smi ile)
   QString gpuClock = getHardwareInfo(
       "nvidia-smi", {"--query-gpu=clocks.gr", "--format=csv,noheader"});
-  if (gpuClock != "0" && !gpuClock.isEmpty()) {
-    ui->gpu_clock_label->setText(gpuClock);
+
+  // GPU Bellek Tipi (GDDR)
+  QString gpuMemType = "-";
+  // Önce nvidia-smi dene
+  QString nvidiaMemType = getHardwareInfo(
+      "nvidia-smi", {"--query-gpu=memory.type", "--format=csv,noheader"});
+
+  if (nvidiaMemType != "0" && !nvidiaMemType.isEmpty()) {
+    gpuMemType = nvidiaMemType;
   } else {
-    ui->gpu_clock_label->setText("-");
+    // Bulunamazsa genel bir tahmin veya boş
+    // wmic ile VideoMemoryType 2 (Unknown) dönebilir, güvenilmez.
+    // Harici GPU ise genelde GDDR'dır.
+    if (selectedGpuName.contains("NVIDIA") || selectedGpuName.contains("AMD") ||
+        selectedGpuName.contains("Radeon") || selectedGpuName.contains("RTX") ||
+        selectedGpuName.contains("GTX")) {
+      gpuMemType = "GDDR";
+    }
   }
+
+  ui->gpu_hiz_label->setText("Hız:<br>Bellek Tipi:");
+
+  QString clockText = "-";
+  if (gpuClock != "0" && !gpuClock.isEmpty()) {
+    clockText = gpuClock;
+  }
+  ui->gpu_clock_label->setText(clockText + "<br>" + gpuMemType);
 
   // ==========================
   // 3. RAM (BELLEK) BİLGİLERİ
@@ -284,7 +354,32 @@ void AnasayfaWidget::taraVeGuncelle() {
   }
 
   QString ramSpeed = getHardwareInfo("wmic", {"memorychip", "get", "Speed"});
-  ui->ram_clock_label->setText(ramSpeed + " MHz");
+
+  // RAM Tipi (DDR)
+  QString ramTypeRaw =
+      getHardwareInfo("wmic", {"memorychip", "get", "SMBIOSMemoryType"});
+  QString ramType = "DDR";
+  bool ok;
+  int typeInt = ramTypeRaw.toInt(&ok);
+  if (ok) {
+    if (typeInt == 20)
+      ramType = "DDR";
+    else if (typeInt == 21)
+      ramType = "DDR2";
+    else if (typeInt == 24)
+      ramType = "DDR3";
+    else if (typeInt == 26)
+      ramType = "DDR4";
+    else if (typeInt == 30)
+      ramType = "DDR4"; // LPDDR4
+    else if (typeInt == 34)
+      ramType = "DDR5";
+    else if (typeInt == 0)
+      ramType = "DDR5"; // Genelde yeni sistemlerde 0
+  }
+
+  ui->ram_hiz_label->setText("Hız:<br>Türü:");
+  ui->ram_clock_label->setText(ramSpeed + " MHz<br>" + ramType);
 
   // RAM Modelini Çek (Manufacturer + PartNumber)
   QString ramManuf =
