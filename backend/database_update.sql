@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS test_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    cpu VARCHAR(255),
+    gpu VARCHAR(255),
+    ram VARCHAR(255),
+    score INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
