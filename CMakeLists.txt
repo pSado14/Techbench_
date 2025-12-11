@@ -56,6 +56,8 @@ set(PROJECT_SOURCES
         Widgets/Bagis/bagisistegidialog.h
         Widgets/Bagis/moderndialogs.cpp
         Widgets/Bagis/moderndialogs.h
+        Widgets/Bagis/submerchantdialog.cpp
+        Widgets/Bagis/submerchantdialog.h
         Widgets/Yardim/yardimwidget.cpp
         Widgets/Yardim/yardimwidget.h
         Widgets/Yardim/yardimwidget.ui

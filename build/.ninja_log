@@ -1,0 +1,38 @@
+# ninja log v6
+7	3748	7871779797658303	Techbench_autogen/timestamp	5f434dc8df8961be
+7	3748	7871779797658303	Techbench_autogen/mocs_compilation.cpp	5f434dc8df8961be
+7	3748	7871779797658303	E:/Qt Projects/Techbench_/build/Techbench_autogen/timestamp	5f434dc8df8961be
+7	3748	7871779797658303	E:/Qt Projects/Techbench_/build/Techbench_autogen/mocs_compilation.cpp	5f434dc8df8961be
+3757	3888	7871779800457440	Techbench_autogen/EWIEGA46WW/qrc_resources.cpp	b226efe529f1ab3b
+3757	3888	7871779800457440	E:/Qt Projects/Techbench_/build/Techbench_autogen/EWIEGA46WW/qrc_resources.cpp	b226efe529f1ab3b
+3936	12581	7871779801031100	CMakeFiles/Techbench.dir/Widgets/Bagis/submerchantdialog.cpp.obj	8cf34ee0241c753f
+3932	12646	7871779800991228	CMakeFiles/Techbench.dir/Widgets/Bagis/moderndialogs.cpp.obj	54c99dcb39583159
+3892	13019	7871779800587112	CMakeFiles/Techbench.dir/main.cpp.obj	cfad0660065e9ef5
+3902	13573	7871779800693283	CMakeFiles/Techbench.dir/Widgets/Giris/sifremiunuttumdialog.cpp.obj	f6503b1066e2f45f
+3940	13743	7871779801073586	CMakeFiles/Techbench.dir/Widgets/Yardim/yardimwidget.cpp.obj	63937c7d0f68207e
+3906	14138	7871779800734314	CMakeFiles/Techbench.dir/Widgets/Kayit/kayitwidget.cpp.obj	fa234c188df2b302
+3899	14318	7871779800658665	CMakeFiles/Techbench.dir/Widgets/Giris/giriswidget.cpp.obj	6e7dd428315741f0
+3928	14902	7871779800947431	CMakeFiles/Techbench.dir/Widgets/Bagis/bagisistegidialog.cpp.obj	372a4427368f1f21
+3914	16630	7871779800811302	CMakeFiles/Techbench.dir/Widgets/Karsilastirma/karsilastirmawidget.cpp.obj	397cf1685c15523e
+3923	17270	7871779800901204	CMakeFiles/Techbench.dir/Widgets/Bagis/bagiswidget.cpp.obj	5600080182c6d641
+3910	17495	7871779800777747	CMakeFiles/Techbench.dir/Widgets/Anasayfa/anasayfawidget.cpp.obj	3ea13e5cb3ab4150
+13020	18039	7871779891860511	CMakeFiles/Techbench.dir/Techbench_autogen/EWIEGA46WW/qrc_resources.cpp.obj	d08fbf1be69215a7
+12647	19351	7871779888139374	CMakeFiles/Techbench.dir/Widgets/Benchmark/benchmarkworker.cpp.obj	cd79fe1e4968525f
+12581	19749	7871779887479078	CMakeFiles/Techbench.dir/Network/networkmanager.cpp.obj	65e91dcacfa5fff
+3919	22689	7871779800856152	CMakeFiles/Techbench.dir/Widgets/Benchmark/benchmarkwidget.cpp.obj	d74289339e9c5dd8
+3895	23008	7871779800623790	CMakeFiles/Techbench.dir/Widgets/Main/mainwindow.cpp.obj	62ba778e1f111b8f
+3888	23190	7871779800547823	CMakeFiles/Techbench.dir/Techbench_autogen/mocs_compilation.cpp.obj	49a17b451c25978a
+23190	25161	7871779993564889	Techbench.exe	81bd115b01f10cb8
+45	2814	7871783554356337	Techbench_autogen/timestamp	5f434dc8df8961be
+45	2814	7871783554356337	Techbench_autogen/mocs_compilation.cpp	5f434dc8df8961be
+45	2814	7871783554356337	E:/Qt Projects/Techbench_/build/Techbench_autogen/timestamp	5f434dc8df8961be
+45	2814	7871783554356337	E:/Qt Projects/Techbench_/build/Techbench_autogen/mocs_compilation.cpp	5f434dc8df8961be
+2824	6834	7871783555800556	CMakeFiles/Techbench.dir/Widgets/Bagis/submerchantdialog.cpp.obj	8cf34ee0241c753f
+2818	12424	7871783555747747	CMakeFiles/Techbench.dir/Widgets/Main/mainwindow.cpp.obj	62ba778e1f111b8f
+2815	12825	7871783555718048	CMakeFiles/Techbench.dir/Techbench_autogen/mocs_compilation.cpp.obj	49a17b451c25978a
+14	228	7871785203568023	Techbench_autogen/timestamp	5f434dc8df8961be
+14	228	7871785203568023	Techbench_autogen/mocs_compilation.cpp	5f434dc8df8961be
+14	228	7871785203568023	E:/Qt Projects/Techbench_/build/Techbench_autogen/timestamp	5f434dc8df8961be
+14	228	7871785203568023	E:/Qt Projects/Techbench_/build/Techbench_autogen/mocs_compilation.cpp	5f434dc8df8961be
+228	4481	7871785205708479	CMakeFiles/Techbench.dir/Widgets/Bagis/bagiswidget.cpp.obj	5600080182c6d641
+4481	6457	7871785248232293	Techbench.exe	81bd115b01f10cb8

@@ -1,6 +1,7 @@
 #include "bagiswidget.h"
 #include "bagisistegidialog.h"
 #include "moderndialogs.h"
+#include "submerchantdialog.h"
 #include "ui_bagiswidget.h"
 #include <QDesktopServices>
 #include <QFrame>
@@ -149,6 +150,53 @@ void BagisWidget::setupUiProgrammatically() {
 }
 
 void BagisWidget::on_createRequestBtn_clicked() {
+  // Önce kullanıcının sub-merchant kaydı olup olmadığını kontrol et
+  netManager->checkSubMerchant(
+      currentUsername, [=](bool success, bool hasSubMerchant, QString message) {
+        if (!success) {
+          ModernMessageBox::critical(this, "Hata",
+                                     "Kontrol yapılamadı: " + message);
+          return;
+        }
+
+        if (!hasSubMerchant) {
+          // Sub-merchant kaydı yok, bilgi toplama dialogunu göster
+          SubMerchantDialog subDialog(this);
+          subDialog.setEmail(currentEmail);
+
+          if (subDialog.exec() == QDialog::Accepted) {
+            SubMerchantDialog::SubMerchantInfo info =
+                subDialog.getSubMerchantInfo();
+
+            // Sub-merchant kaydını oluştur
+            // Parametre sırası: username, name, surname, email, phone,
+            // identity, iban, address
+            netManager->registerSubMerchant(
+                currentUsername, info.name, info.surname, info.email,
+                info.phone, info.identityNumber, info.iban, info.address,
+                [=](bool regSuccess, QString regMessage) {
+                  if (regSuccess) {
+                    ModernMessageBox::information(
+                        this, "Başarılı",
+                        "Ödeme bilgileriniz kaydedildi. Şimdi bağış isteği "
+                        "oluşturabilirsiniz.");
+                    // Kayıt başarılı, bağış isteği dialogunu göster
+                    showBagisIstegiDialog();
+                  } else {
+                    ModernMessageBox::critical(
+                        this, "Hata",
+                        "Ödeme bilgileri kaydedilemedi: " + regMessage);
+                  }
+                });
+          }
+        } else {
+          // Sub-merchant kaydı var, direkt bağış isteği dialogunu göster
+          showBagisIstegiDialog();
+        }
+      });
+}
+
+void BagisWidget::showBagisIstegiDialog() {
   BagisIstegiDialog dialog(this);
   if (dialog.exec() == QDialog::Accepted) {
     BagisIstegiDialog::Part part = dialog.getSelectedPart();
@@ -292,7 +340,7 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
   if (request.targetAmount > 0) {
     percent = (request.currentAmount * 100) / request.targetAmount;
   }
-  QLabel *percentLabel = new QLabel(QString("%% %1 Tamamlandı").arg(percent));
+  QLabel *percentLabel = new QLabel(QString("%1% Tamamlandı").arg(percent));
   percentLabel->setAlignment(Qt::AlignRight);
   percentLabel->setStyleSheet("color: white; font-size: 12px; font-weight: "
                               "bold; background: transparent;");

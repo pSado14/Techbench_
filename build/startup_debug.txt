@@ -1,0 +1,7 @@
+Could not parse stylesheet of object MainWindow(0xae03bffc40, name = "MaShowing MainWindow...
+Entering event loop...
+ame: QMetaObject::connectSlotsByName: No matching signal for on_hesapSilmeIstegi_geldi()
+qt.core.qmetaobject.connectslotsbyname: QMetaObject::connectSlotsByName: No matching signal for on_gecmisi_temizle_buton_clicked()
+qt.core.qmetaobject.connectslotsbyname: QMetaObject::connectSlotsByName: No matching signal for on_createRequestBtn_clicked()
+Durum: Çýkýþ Yapýldý -> Yeþil.
+Could not parse stylesheet of object MainWindow(0xae03bffc40, name = "MainWindow")

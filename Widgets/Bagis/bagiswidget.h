@@ -25,6 +25,8 @@ private:
 
   void setupUiProgrammatically();
   void loadDonationRequests(); // --- YENİ ---
+  void
+  showDonationDialog(); // --- YENİ: Sub-merchant kontrolü sonrası açılan dialog
 
   struct DonationRequest {
     int id; // --- YENİ ---
@@ -49,6 +51,7 @@ private slots:
 private:
   QGridLayout *cardsLayout;
   void createDonationCard(const DonationRequest &request, int row, int col);
+  void showBagisIstegiDialog(); // Bağış isteği dialogunu göster
 };
 
 #endif // BAGISWIDGET_H

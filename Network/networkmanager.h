@@ -102,6 +102,19 @@ public:
   // --- YENİ: Sunucuyu Durdurma ---
   void stopServer();
 
+  // --- YENİ: Sub-Merchant Kontrolü ---
+  void checkSubMerchant(
+      const QString &username,
+      std::function<void(bool success, bool hasSubMerchant, QString message)>
+          callback);
+
+  // --- YENİ: Sub-Merchant Kaydı ---
+  void registerSubMerchant(
+      const QString &username, const QString &name, const QString &surname,
+      const QString &email, const QString &phone, const QString &identityNumber,
+      const QString &iban, const QString &address,
+      std::function<void(bool success, QString message)> callback);
+
 private:
   QNetworkAccessManager *manager;
   const QString BASE_URL = "http://127.0.0.1:3000"; // Node.js sunucu adresiniz

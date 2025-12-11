@@ -668,3 +668,89 @@ void NetworkManager::stopServer() {
   QNetworkRequest request(url);
   manager->get(request);
 }
+
+// --- SUB-MERCHANT KONTROLÜ ---
+void NetworkManager::checkSubMerchant(
+    const QString &username,
+    std::function<void(bool success, bool hasSubMerchant, QString message)>
+        callback) {
+  QUrl url(BASE_URL + "/check-submerchant");
+  QUrlQuery query;
+  query.addQueryItem("username", username);
+  url.setQuery(query);
+
+  QNetworkRequest request(url);
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+    QJsonObject jsonObject = jsonResponse.object();
+
+    bool success = false;
+    bool hasSubMerchant = false;
+    QString message = "Kontrol hatası";
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (!jsonObject.isEmpty()) {
+        success = jsonObject["success"].toBool();
+        hasSubMerchant = jsonObject["hasSubMerchant"].toBool();
+        message =
+            success ? "Kontrol tamamlandı" : jsonObject["message"].toString();
+      }
+    } else {
+      message = "Bağlantı Hatası: " + reply->errorString();
+    }
+
+    callback(success, hasSubMerchant, message);
+    reply->deleteLater();
+  });
+}
+
+// --- SUB-MERCHANT KAYDI ---
+void NetworkManager::registerSubMerchant(
+    const QString &username, const QString &name, const QString &surname,
+    const QString &email, const QString &phone, const QString &identityNumber,
+    const QString &iban, const QString &address,
+    std::function<void(bool success, QString message)> callback) {
+  QUrl url(BASE_URL + "/register-submerchant");
+  QNetworkRequest request(url);
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  QJsonObject json;
+  json["username"] = username;
+  json["name"] = name;
+  json["surname"] = surname;
+  json["email"] = email;
+  json["phone"] = phone;
+  json["identityNumber"] = identityNumber;
+  json["iban"] = iban;
+  json["address"] = address;
+
+  QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+    QJsonObject jsonObject = jsonResponse.object();
+
+    bool success = false;
+    QString message = "Kayıt hatası";
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (!jsonObject.isEmpty()) {
+        success = jsonObject["success"].toBool();
+        message = jsonObject["message"].toString();
+      }
+    } else {
+      if (!jsonObject.isEmpty()) {
+        message = jsonObject["message"].toString();
+      } else {
+        message = "Bağlantı Hatası: " + reply->errorString();
+      }
+    }
+
+    callback(success, message);
+    reply->deleteLater();
+  });
+}
