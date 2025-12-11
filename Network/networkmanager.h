@@ -31,8 +31,10 @@ public:
                 std::function<void(bool success, QString message)> callback);
 
   // Skor Kaydetme İsteği
+  // Skor Kaydetme İsteği
   void saveScore(const QString &username, const QString &cpu,
                  const QString &gpu, const QString &ram, int score,
+                 int cpuScore, int gpuScore, int ramScore,
                  std::function<void(bool success, QString message)> callback);
 
   // Rakip Sistemleri Getirme İsteği

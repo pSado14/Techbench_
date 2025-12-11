@@ -246,3 +246,36 @@ void KarsilastirmaWidget::on_arama_kutusu_textChanged(const QString &arg1) {
     }
   }
 }
+
+void KarsilastirmaWidget::reset() {
+  m_username = "";
+  m_cpu = "";
+  m_gpu = "";
+  m_ram = "";
+  m_myScore = 0;
+
+  // UI'ı sıfırla
+  updateSizinSisteminizUI();
+  setSizinPuaniniz(0);
+  showLoginWarning(); // Listeyi temizle ve uyarı göster
+
+  // Grafiği sıfırla
+  if (m_mySet)
+    m_mySet->replace(0, 0);
+  if (m_rivalSet)
+    m_rivalSet->replace(0, 0);
+
+  // Rakip bilgilerini de sıfırla
+  if (ui->rakip_sistem_baslik) {
+    ui->rakip_sistem_baslik->setText(
+        "<html><head/><body><p><span style=\" font-size:12pt; "
+        "font-weight:600; color:#ffffff;\">Rakip "
+        "Sistem</span></p></body></html>");
+  }
+  if (ui->label) {
+    ui->label->setText("Rakip Seçilmedi");
+  }
+  if (ui->rakip_puan_deger) {
+    ui->rakip_puan_deger->setText("0 pts");
+  }
+}

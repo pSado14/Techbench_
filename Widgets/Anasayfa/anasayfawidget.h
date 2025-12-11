@@ -25,10 +25,15 @@ public:
                 const QString &source);
   void setToplamPuan(int score, bool emitSignal = true);
   void taraVeGuncelle();
-  void setPuanlar(int cpuScore, int gpuScore, int ramScore);
+  void setPuanlar(int cpuScore, int gpuScore, int ramScore,
+                  bool emitSignal = true);
 
   void bilgileriSifirla();
   void checkPrice(const QString &productName, const QString &type);
+
+  int getCpuScore() const { return m_cpuScore; }
+  int getGpuScore() const { return m_gpuScore; }
+  int getRamScore() const { return m_ramScore; }
 
 signals:
   void hesapSilmeTiklandi();

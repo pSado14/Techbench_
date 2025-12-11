@@ -251,7 +251,22 @@ void MainWindow::setupMenuButtons() {
 
                 // Anasayfa'yı güncelle
                 m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
-                m_anasayfa->setToplamPuan(score, false);
+
+                // Puanları güncelle
+                int cpuScore = userData["cpu_score"].toInt();
+                int gpuScore = userData["gpu_score"].toInt();
+                int ramScore = userData["ram_score"].toInt();
+
+                qDebug() << "DB Scores - CPU:" << cpuScore
+                         << " GPU:" << gpuScore << " RAM:" << ramScore
+                         << " Total (DB):" << score;
+
+                if (cpuScore > 0 || gpuScore > 0 || ramScore > 0) {
+                  m_anasayfa->setPuanlar(cpuScore, gpuScore, ramScore, false);
+                } else {
+                  // Eski veriler için (Sadece toplam puan varsa)
+                  m_anasayfa->setToplamPuan(score, false);
+                }
 
                 // Karşılaştırma Merkezi'ni güncelle
                 m_karsilastirma->setSizinSisteminiz(cpu, gpu, ram);
@@ -300,9 +315,13 @@ void MainWindow::setupMenuButtons() {
               QString gpu = m_karsilastirma->getGpu();
               QString ram = m_karsilastirma->getRam();
 
+              int cpuScore = m_anasayfa->getCpuScore();
+              int gpuScore = m_anasayfa->getGpuScore();
+              int ramScore = m_anasayfa->getRamScore();
+
               netManager->saveScore(
-                  currentUsername, cpu, gpu, ram, totalScore,
-                  [=](bool success, QString message) {
+                  currentUsername, cpu, gpu, ram, totalScore, cpuScore,
+                  gpuScore, ramScore, [=](bool success, QString message) {
                     if (success) {
                       qDebug() << "Skor kaydedildi:" << message;
                       // Skor kaydedilince listeyi güncelle
@@ -335,8 +354,10 @@ void MainWindow::setupMenuButtons() {
 
   // 4. Fiyat Sorgulama
 
-  connect(m_benchmark, &BenchmarkWidget::testBitti, m_anasayfa,
-          &AnasayfaWidget::setPuanlar);
+  connect(m_benchmark, &BenchmarkWidget::testBitti, this,
+          [=](int cpu, int gpu, int ram) {
+            m_anasayfa->setPuanlar(cpu, gpu, ram, true);
+          });
 
   // Diğer bağlantılar...
   connect(m_giris, &GirisWidget::kayitOlTiklandi, this, [=]() {
@@ -472,16 +493,13 @@ void MainWindow::resetAllPages() {
   m_anasayfa->bilgileriSifirla();
 
   // 2. Karşılaştırma
-  m_karsilastirma->setKullaniciBilgileri("");
-  m_karsilastirma->showLoginWarning();
+  m_karsilastirma->reset();
 
   // 3. Bağış
-  m_bagis->setKullaniciAdi("");
-  m_bagis->setEmail("");
+  m_bagis->reset();
 
   // 4. Benchmark
-  m_benchmark->setUsername("");
-  m_benchmark->updateHistoryList(QList<QVariantMap>()); // Boş liste ile temizle
+  m_benchmark->reset();
 
   // 5. Genel Değişkenler
   currentUsername = "";

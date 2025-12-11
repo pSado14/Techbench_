@@ -163,7 +163,8 @@ void NetworkManager::deleteAccount(
 // --- SKOR KAYDETME İŞLEMİ ---
 void NetworkManager::saveScore(const QString &username, const QString &cpu,
                                const QString &gpu, const QString &ram,
-                               int score,
+                               int score, int cpuScore, int gpuScore,
+                               int ramScore,
                                std::function<void(bool, QString)> callback) {
   QUrl url(BASE_URL + "/save-score");
   QNetworkRequest request(url);
@@ -175,6 +176,9 @@ void NetworkManager::saveScore(const QString &username, const QString &cpu,
   json["gpu"] = gpu;
   json["ram"] = ram;
   json["score"] = score;
+  json["cpu_score"] = cpuScore;
+  json["gpu_score"] = gpuScore;
+  json["ram_score"] = ramScore;
 
   QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
 

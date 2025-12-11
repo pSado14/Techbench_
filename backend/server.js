@@ -130,7 +130,10 @@ const alterColumns = [
     "ALTER TABLE kullanicilar ADD COLUMN iban VARCHAR(50)",
     "ALTER TABLE kullanicilar ADD COLUMN identity_number VARCHAR(20)",
     "ALTER TABLE kullanicilar ADD COLUMN phone VARCHAR(20)",
-    "ALTER TABLE kullanicilar ADD COLUMN address TEXT"
+    "ALTER TABLE kullanicilar ADD COLUMN address TEXT",
+    "ALTER TABLE kullanicilar ADD COLUMN cpu_score INT DEFAULT 0",
+    "ALTER TABLE kullanicilar ADD COLUMN gpu_score INT DEFAULT 0",
+    "ALTER TABLE kullanicilar ADD COLUMN ram_score INT DEFAULT 0"
 ];
 
 alterColumns.forEach(sql => {
@@ -296,10 +299,10 @@ app.post('/delete-account', (req, res) => {
 // --- SKOR KAYDETME API ---
 app.post('/save-score', (req, res) => {
     console.log("Skor Kaydetme İsteği:", req.body.username);
-    const { username, cpu, gpu, ram, score } = req.body;
+    const { username, cpu, gpu, ram, score, cpu_score, gpu_score, ram_score } = req.body;
 
-    const sqlUpdate = "UPDATE kullanicilar SET cpu = ?, gpu = ?, ram = ?, score = ? WHERE kullanici_adi = ?";
-    db.query(sqlUpdate, [cpu, gpu, ram, score, username], (err, result) => {
+    const sqlUpdate = "UPDATE kullanicilar SET cpu = ?, gpu = ?, ram = ?, score = ?, cpu_score = ?, gpu_score = ?, ram_score = ? WHERE kullanici_adi = ?";
+    db.query(sqlUpdate, [cpu, gpu, ram, score, cpu_score || 0, gpu_score || 0, ram_score || 0, username], (err, result) => {
         if (err) {
             console.error("Skor Kaydetme Hatası:", err);
             return res.status(500).json({ success: false, message: "Veritabanı hatası." });
@@ -346,7 +349,7 @@ app.post('/delete-history', (req, res) => {
             return res.status(500).json({ success: false, message: "Veritabanı hatası (History)." });
         }
 
-        const sqlResetUser = "UPDATE kullanicilar SET score = 0, cpu = NULL, gpu = NULL, ram = NULL WHERE kullanici_adi = ?";
+        const sqlResetUser = "UPDATE kullanicilar SET score = 0, cpu_score = 0, gpu_score = 0, ram_score = 0, cpu = NULL, gpu = NULL, ram = NULL WHERE kullanici_adi = ?";
         db.query(sqlResetUser, [username], (errUser, resultUser) => {
             if (errUser) {
                 console.error("Puan Sıfırlama Hatası:", errUser);

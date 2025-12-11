@@ -18,7 +18,6 @@
 #include <QtCharts/QStackedBarSeries>
 #include <QtCharts/QValueAxis>
 
-
 AnasayfaWidget::AnasayfaWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::AnasayfaWidget) {
   ui->setupUi(this);
@@ -1052,7 +1051,8 @@ void AnasayfaWidget::updateCharts(int cpuScore, int gpuScore, int ramScore) {
     ui->mini_ram_score->setText(QString::number(ramScore));
 }
 
-void AnasayfaWidget::setPuanlar(int cpuScore, int gpuScore, int ramScore) {
+void AnasayfaWidget::setPuanlar(int cpuScore, int gpuScore, int ramScore,
+                                bool emitSignal) {
   // Gelen puanları üye değişkenlere kaydet (Sadece 0'dan büyükse günceller)
   // Böylece tekli test yapıldığında diğer puanlar silinmez.
   if (cpuScore > 0)
@@ -1080,7 +1080,9 @@ void AnasayfaWidget::setPuanlar(int cpuScore, int gpuScore, int ramScore) {
 
   // Toplam puanı hesapla ve sinyal gönder
   int totalScore = m_cpuScore + m_gpuScore + m_ramScore;
-  emit puanlarGuncellendi(totalScore);
+  if (emitSignal) {
+    emit puanlarGuncellendi(totalScore);
+  }
 }
 
 void AnasayfaWidget::checkPrice(const QString &productName,

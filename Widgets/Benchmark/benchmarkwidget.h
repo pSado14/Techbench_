@@ -26,6 +26,7 @@ public slots:
   void enableStartButton();
   void updateHistoryList(const QList<QVariantMap> &history);
   void setUsername(QString username) { m_username = username; }
+  void reset(); // --- YENİ ---
 
 private slots:
   void on_testi_baslat_buton_clicked();

@@ -498,3 +498,9 @@ void BagisWidget::createDonationCard(const DonationRequest &request, int row,
 
   cardsLayout->addWidget(card, row, col);
 }
+
+void BagisWidget::reset() {
+  currentUsername = "";
+  currentEmail = "";
+  loadDonationRequests(); // Listeyi yenile
+}

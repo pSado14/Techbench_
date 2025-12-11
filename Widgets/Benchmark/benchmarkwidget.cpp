@@ -469,3 +469,24 @@ void BenchmarkWidget::updateHistoryList(const QList<QVariantMap> &history) {
     ui->sonuc_gecmisi_listesi->addItem(itemText);
   }
 }
+
+void BenchmarkWidget::reset() {
+  m_username = "";
+  m_detectedGpuName = "GPU";
+
+  // Listeyi temizle
+  if (ui->sonuc_gecmisi_listesi) {
+    ui->sonuc_gecmisi_listesi->clear();
+  }
+
+  // Grafikleri sıfırla
+  setupCharts();
+
+  // Buton durumunu başlangıç haline getir
+  ui->testi_baslat_buton->setEnabled(false);
+  ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
+
+  if (ui->henuz_test_baslatilmadi_label) {
+    ui->henuz_test_baslatilmadi_label->setText("Henüz test başlatılmadı.");
+  }
+}

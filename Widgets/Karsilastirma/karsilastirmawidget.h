@@ -27,6 +27,7 @@ public:
   void setSizinPuaniniz(int totalScore);
   void updateRivalsList(const QList<QVariantMap> &rivals);
   void showLoginWarning(); // <-- YENİ
+  void reset();            // --- YENİ: Sayfayı sıfırla ---
 
   QString getCpu() const { return m_cpu; }
   QString getGpu() const { return m_gpu; }

@@ -19,6 +19,7 @@ public:
 
   void setKullaniciAdi(const QString &username); // --- YENİ ---
   void setEmail(const QString &email);           // --- YENİ ---
+  void reset();                                  // --- YENİ ---
 
 private:
   Ui::BagisWidget *ui;
