@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -102,42 +102,8 @@ CREATE TABLE IF NOT EXISTS test_history (
 )`;
 
 db.query(createHistoryTableQuery, (err) => {
-    if (err) console.error("Tablo olusturma hatasi (test_history):", err);
+    if (err) console.error("Tablo oluşturma hatası (test_history):", err);
     else console.log("Tablo kontrol edildi: test_history");
-});
-
-// --- TRANSACTIONS TABLOSU OLUSTURMA ---
-const createTransactionsTableQuery = `
-CREATE TABLE IF NOT EXISTS transactions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sender_username VARCHAR(255) NOT NULL,
-    receiver_username VARCHAR(255) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    request_id INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)`;
-
-db.query(createTransactionsTableQuery, (err) => {
-    if (err) console.error("Tablo olusturma hatasi (transactions):", err);
-    else console.log("Tablo kontrol edildi: transactions");
-});
-
-// --- KULLANICILAR TABLOSUNA GEREKLI SUTUNLARI EKLE ---
-const alterColumns = [
-    "ALTER TABLE kullanicilar ADD COLUMN balance DECIMAL(10,2) DEFAULT 0",
-    "ALTER TABLE kullanicilar ADD COLUMN sub_merchant_key VARCHAR(255)",
-    "ALTER TABLE kullanicilar ADD COLUMN iban VARCHAR(50)",
-    "ALTER TABLE kullanicilar ADD COLUMN identity_number VARCHAR(20)",
-    "ALTER TABLE kullanicilar ADD COLUMN phone VARCHAR(20)",
-    "ALTER TABLE kullanicilar ADD COLUMN address TEXT"
-];
-
-alterColumns.forEach(sql => {
-    db.query(sql, (err) => {
-        if (err && err.code !== 'ER_DUP_FIELDNAME') {
-            // Sutun zaten varsa hata verme
-        }
-    });
 });
 
 // --- NODEMAILER AYARLARI ---
@@ -268,7 +234,7 @@ app.post('/delete-account', (req, res) => {
             res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
         } else {
             console.log("Kullanıcı silindi:", username);
-            res.status(200).json({ success: true, message: "Hesap ve tum veriler silindi." });
+            res.status(200).json({ success: true, message: "Hesap başarıyla silindi." });
         }
     });
 });
@@ -395,209 +361,97 @@ app.get('/get-price', async (req, res) => {
     });
 });
 
-// --- SUB-MERCHANT KAYIT API ---
-app.post('/register-submerchant', (req, res) => {
-    console.log("Sub-Merchant Kayit Istegi:", req.body.username);
-    const { username, name, surname, email, iban, identityNumber, phone, address } = req.body;
-
-    if (!username || !name || !surname || !email || !iban || !identityNumber) {
-        return res.status(400).json({ success: false, message: "Eksik bilgi." });
-    }
-
-    // IBAN temizle
-    let cleanIban = iban.replace(/\s/g, '').toUpperCase();
-    if (!cleanIban.startsWith('TR')) {
-        cleanIban = 'TR' + cleanIban;
-    }
-    if (cleanIban.length !== 26) {
-        return res.status(400).json({ success: false, message: "IBAN 26 karakter olmali." });
-    }
-
-    const subMerchantExternalId = `SM_${username}_${Date.now()}`;
-    const request = {
-        locale: Iyzipay.LOCALE.TR,
-        conversationId: String(Date.now()),
-        subMerchantExternalId: subMerchantExternalId,
-        subMerchantType: Iyzipay.SUB_MERCHANT_TYPE.PERSONAL,
-        address: address || 'Istanbul, Turkey',
-        contactName: name,
-        contactSurname: surname,
-        email: email,
-        gsmNumber: phone || '+905350000000',
-        name: name + ' ' + surname,
-        iban: cleanIban,
-        identityNumber: identityNumber,
-        currency: Iyzipay.CURRENCY.TRY
-    };
-
-    iyzipay.subMerchant.create(request, function (err, result) {
-        if (err) {
-            console.error("Iyzico SubMerchant Hatasi:", err);
-            return res.status(500).json({ success: false, message: "Iyzico hatasi." });
-        }
-
-        if (result.status === 'success') {
-            const subMerchantKey = result.subMerchantKey;
-            const sqlUpdate = `UPDATE kullanicilar SET sub_merchant_key = ?, iban = ?, identity_number = ?, phone = ?, address = ? WHERE kullanici_adi = ?`;
-            db.query(sqlUpdate, [subMerchantKey, cleanIban, identityNumber, phone, address, username], (errDb) => {
-                if (errDb) {
-                    console.error("DB Guncelleme Hatasi:", errDb);
-                    return res.status(500).json({ success: false, message: "Veritabani hatasi." });
-                }
-                console.log("Sub-merchant kaydedildi:", username, subMerchantKey);
-                res.status(200).json({ success: true, message: "Sub-merchant olarak kaydedildiniz.", subMerchantKey: subMerchantKey });
-            });
-        } else {
-            console.error("Iyzico API Hatasi:", result.errorMessage);
-            res.status(400).json({ success: false, message: "Iyzico Hatasi: " + result.errorMessage });
-        }
-    });
-});
-
-// --- SUB-MERCHANT DURUM KONTROLU ---
-app.get('/check-submerchant', (req, res) => {
-    const { username } = req.query;
-    if (!username) return res.status(400).json({ success: false, message: "Kullanici adi gerekli." });
-
-    const sql = "SELECT sub_merchant_key FROM kullanicilar WHERE kullanici_adi = ?";
-    db.query(sql, [username], (err, results) => {
-        if (err) return res.status(500).json({ success: false, message: "Veritabani hatasi." });
-        if (results.length === 0) return res.status(404).json({ success: false, message: "Kullanici bulunamadi." });
-
-        const hasSubMerchant = results[0].sub_merchant_key ? true : false;
-        res.status(200).json({ success: true, hasSubMerchant: hasSubMerchant });
-    });
-});
-
-// --- SUB-MERCHANT SIFIRLAMA ---
-app.post('/reset-submerchant', (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ success: false, message: "Kullanici adi eksik." });
-
-    const sql = `UPDATE kullanicilar SET sub_merchant_key = NULL, iban = NULL, identity_number = NULL, phone = NULL, address = NULL WHERE kullanici_adi = ?`;
-    db.query(sql, [username], (err, result) => {
-        if (err) return res.status(500).json({ success: false, message: "Veritabani hatasi." });
-        console.log("Sub-merchant kaydi sifirlandi:", username);
-        res.status(200).json({ success: true, message: "Sub-merchant kaydi sifirlandi." });
-    });
-});
-
-// --- IYZICO ODEME BASLATMA API ---
+// --- IYZICO ÖDEME BAŞLATMA API ---
 app.post('/payment/initialize', (req, res) => {
-    console.log("Odeme Baslatma Istegi:", req.body);
+    console.log("Ödeme Başlatma İsteği:", req.body);
     try {
         const { price, basketId, user, productName, receiverUsername, requestId } = req.body;
 
         if (!user) {
-            return res.status(400).json({ success: false, message: "Kullanici bilgisi eksik." });
+            return res.status(400).json({ success: false, message: "Kullanıcı bilgisi eksik." });
         }
 
         const senderUsername = user.name || 'UnknownSender';
         const receiver = receiverUsername || 'System';
 
-        // Alicinin sub-merchant key'ini bul
-        const sqlGetReceiver = "SELECT sub_merchant_key FROM kullanicilar WHERE kullanici_adi = ?";
-        db.query(sqlGetReceiver, [receiver], (err, results) => {
-            if (err) {
-                console.error("Receiver sorgu hatasi:", err);
-                return res.status(500).json({ success: false, message: "Veritabani hatasi." });
-            }
+        // FIX: conversationId sadece sayı olmalı - zararlı kod hatası için
+        const reqId = requestId ? String(requestId) : '0';
+        const conversationId = reqId.replace(/[^0-9]/g, '') || '0';
 
-            if (results.length === 0) {
-                return res.status(404).json({ success: false, message: "Alici bulunamadi." });
-            }
+        // Sanitize usernames - sadece alfanumerik karakterler
+        const safeSender = senderUsername.replace(/[^a-zA-Z0-9]/g, '');
+        const safeReceiver = receiver.replace(/[^a-zA-Z0-9]/g, '');
+        const metadata = `DONATION${safeSender}${safeReceiver}${Date.now()}${reqId}`;
 
-            const receiverSubMerchantKey = results[0].sub_merchant_key;
+        const priceStr = price ? price.toString() : '0';
 
-            if (!receiverSubMerchantKey) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Alici henuz sub-merchant olarak kayitli degil."
-                });
-            }
-
-            // Iyzico komisyonu: %1.1 + 0.25 TL
-            const priceNum = parseFloat(price) || 0;
-            const priceStr = priceNum.toFixed(2);
-            const iyzicoCommission = (priceNum * 0.011) + 0.25;
-            const subMerchantPrice = (priceNum - iyzicoCommission).toFixed(2);
-
-            console.log(`Odeme: ${priceStr} TL, Iyzico Kesintisi: ${iyzicoCommission.toFixed(2)} TL, Aliciya: ${subMerchantPrice} TL`);
-
-            const reqId = requestId ? String(requestId) : '0';
-            const conversationId = reqId.replace(/[^0-9]/g, '') || '0';
-            const basketIdMeta = `DONATION:::${senderUsername}:::${receiver}:::${Date.now()}:::${reqId}`;
-
-            const request = {
-                locale: Iyzipay.LOCALE.TR,
-                conversationId: conversationId,
-                price: priceStr,
-                paidPrice: priceStr,
-                currency: Iyzipay.CURRENCY.TRY,
-                basketId: basketIdMeta,
-                paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
-                callbackUrl: 'http://localhost:3000/payment/callback',
-                enabledInstallments: [2, 3, 6, 9],
-                buyer: {
-                    id: 'BUYER_' + senderUsername,
-                    name: user.name || 'John',
-                    surname: user.surname || 'Doe',
-                    gsmNumber: '+905350000000',
-                    email: user.email || 'email@email.com',
-                    identityNumber: '74300864791',
-                    lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                    registrationDate: '2023-01-01 10:00:00',
-                    registrationAddress: 'Istanbul, Turkey',
-                    ip: req.ip || '127.0.0.1',
-                    city: 'Istanbul',
-                    country: 'Turkey',
-                    zipCode: '34000'
-                },
-                shippingAddress: {
-                    contactName: (user.name || 'John') + ' ' + (user.surname || 'Doe'),
-                    city: 'Istanbul',
-                    country: 'Turkey',
-                    address: 'Istanbul, Turkey',
-                    zipCode: '34000'
-                },
-                billingAddress: {
-                    contactName: (user.name || 'John') + ' ' + (user.surname || 'Doe'),
-                    city: 'Istanbul',
-                    country: 'Turkey',
-                    address: 'Istanbul, Turkey',
-                    zipCode: '34000'
-                },
-                basketItems: [
-                    {
-                        id: 'BI_' + reqId,
-                        name: productName || 'Bagis',
-                        category1: 'Donation',
-                        category2: 'Support',
-                        itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                        price: priceStr,
-                        subMerchantKey: receiverSubMerchantKey,
-                        subMerchantPrice: subMerchantPrice
-                    }
-                ]
-            };
-
-            iyzipay.checkoutFormInitialize.create(request, function (err, result) {
-                if (err) {
-                    console.error("Iyzico Hatasi:", err);
-                    res.status(500).json({ success: false, message: "Odeme baslatilamadi." });
-                } else {
-                    if (result.status === 'success') {
-                        res.status(200).json({ success: true, paymentPageUrl: result.paymentPageUrl, htmlContent: result.checkoutFormContent });
-                    } else {
-                        console.error("Iyzico API Hatasi:", result.errorMessage);
-                        res.status(400).json({ success: false, message: "Iyzico Hatasi: " + result.errorMessage });
-                    }
+        const request = {
+            locale: Iyzipay.LOCALE.TR,
+            conversationId: conversationId,
+            price: priceStr,
+            paidPrice: priceStr,
+            currency: Iyzipay.CURRENCY.TRY,
+            basketId: metadata,
+            paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+            callbackUrl: 'http://localhost:3000/payment/callback',
+            enabledInstallments: [2, 3, 6, 9],
+            buyer: {
+                id: 'BY789',
+                name: user.name || 'John',
+                surname: user.surname || 'Doe',
+                gsmNumber: '+905350000000',
+                email: user.email || 'email@email.com',
+                identityNumber: '74300864791',
+                lastLoginDate: '2015-10-05 12:43:35',
+                registrationDate: '2013-04-21 15:12:09',
+                registrationAddress: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
+                ip: '85.34.78.112',
+                city: 'Istanbul',
+                country: 'Turkey',
+                zipCode: '34732'
+            },
+            shippingAddress: {
+                contactName: 'Jane Doe',
+                city: 'Istanbul',
+                country: 'Turkey',
+                address: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
+                zipCode: '34742'
+            },
+            billingAddress: {
+                contactName: 'Jane Doe',
+                city: 'Istanbul',
+                country: 'Turkey',
+                address: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
+                zipCode: '34742'
+            },
+            basketItems: [
+                {
+                    id: 'BI101',
+                    name: productName || 'Bagis',
+                    category1: 'Donation',
+                    category2: 'Electronics',
+                    itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                    price: priceStr
                 }
-            });
+            ]
+        };
+
+        iyzipay.checkoutFormInitialize.create(request, function (err, result) {
+            if (err) {
+                console.error("Iyzico Hatası:", err);
+                res.status(500).json({ success: false, message: "Ödeme başlatılamadı." });
+            } else {
+                if (result.status === 'success') {
+                    res.status(200).json({ success: true, paymentPageUrl: result.paymentPageUrl, htmlContent: result.checkoutFormContent });
+                } else {
+                    console.error("Iyzico API Hatası:", result.errorMessage);
+                    res.status(400).json({ success: false, message: "Iyzico Hatası: " + result.errorMessage });
+                }
+            }
         });
     } catch (error) {
-        console.error("Sunucu Ici Hata (/payment/initialize):", error);
-        res.status(500).json({ success: false, message: "Sunucu hatasi: " + error.message });
+        console.error("Sunucu İçi Hata (/payment/initialize):", error);
+        res.status(500).json({ success: false, message: "Sunucu hatası: " + error.message });
     }
 });
 
@@ -658,57 +512,24 @@ app.post('/payment/callback', (req, res) => {
     iyzipay.checkoutForm.retrieve({ locale: Iyzipay.LOCALE.TR, conversationId: '123456789', token: token }, function (err, result) {
         if (err) {
             logToFile("Iyzico Retrieve Error: " + JSON.stringify(err));
-            return res.send("Odeme dogrulanamadi.");
+            return res.send("Ödeme doğrulanamadı.");
         }
 
         logToFile("Iyzico Result Status: " + result.status + ", PaymentStatus: " + result.paymentStatus);
 
         if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
-            logToFile("Odeme Basarili. BasketID: " + result.basketId);
+            logToFile("Ödeme Başarılı. BasketID: " + result.basketId);
 
-            // BasketId formati: DONATION:::sender:::receiver:::timestamp:::requestId
+            // BasketId formatı: DONATIONSenderReceiverTimestampReqId
             const basketId = result.basketId || "";
             if (basketId.startsWith('DONATION')) {
-                const parts = basketId.split(':::');
-                // parts[0] = 'DONATION', [1] = sender, [2] = receiver, [3] = timestamp, [4] = requestId
-                const senderUsername = parts[1] || 'unknown';
-                const receiverUsername = parts[2] || 'unknown';
-                const requestId = parts[4] || '0';
-
-                // Iyzico komisyonu: %1.1 + 0.25 TL
-                const paidAmount = parseFloat(result.paidPrice) || 0;
-                const iyzicoCommission = (paidAmount * 0.011) + 0.25;
-                const netAmount = paidAmount - iyzicoCommission;
-
-                logToFile(`Bagis alindi. Brut: ${paidAmount} TL, Komisyon: ${iyzicoCommission.toFixed(2)} TL, Net: ${netAmount.toFixed(2)} TL`);
-
-                // 1. Alicinin bakiyesini guncelle
-                db.query("UPDATE kullanicilar SET balance = COALESCE(balance, 0) + ? WHERE kullanici_adi = ?",
-                    [netAmount, receiverUsername], (err1) => {
-                        if (err1) logToFile("Balance guncelleme hatasi: " + err1.message);
-                        else logToFile(`${receiverUsername} bakiyesi ${netAmount.toFixed(2)} TL artirildi`);
-                    });
-
-                // 2. Bagis isteginin collected_amount'unu guncelle
-                if (requestId && requestId !== '0') {
-                    db.query("UPDATE donation_requests SET collected_amount = COALESCE(collected_amount, 0) + ? WHERE id = ?",
-                        [netAmount, requestId], (err2) => {
-                            if (err2) logToFile("Collected amount guncelleme hatasi: " + err2.message);
-                            else logToFile(`Request ${requestId} collected_amount ${netAmount.toFixed(2)} TL artirildi`);
-                        });
-                }
-
-                // 3. Transaction kaydini olustur
-                db.query("INSERT INTO transactions (sender_username, receiver_username, amount, request_id, created_at) VALUES (?, ?, ?, ?, NOW())",
-                    [senderUsername, receiverUsername, netAmount, requestId], (err3) => {
-                        if (err3) logToFile("Transaction kayit hatasi: " + err3.message);
-                        else logToFile("Transaction kaydedildi");
-                    });
+                const amount = parseFloat(result.paidPrice);
+                logToFile(`Bağış alındı. Tutar: ${amount}`);
             }
         } else {
-            logToFile("Odeme basarisiz veya onaylanmadi: " + JSON.stringify(result));
+            logToFile("Ödeme başarısız veya onaylanmadı: " + JSON.stringify(result));
         }
-        res.send("Odeme Islemi Tamamlandi. Pencereyi kapatabilirsiniz.");
+        res.send("Ödeme İşlemi Tamamlandı. Pencereyi kapatabilirsiniz.");
     });
 });
 
