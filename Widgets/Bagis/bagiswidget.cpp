@@ -68,6 +68,15 @@ void BagisWidget::setupUiProgrammatically() {
       "border: none; background: transparent;");
   mainLayout->addWidget(pageTitle);
 
+  // --- Commission Info Label ---
+  QLabel *commissionLabel = new QLabel(
+      "Yapılan bağışlardan Iyzico tarafından %1.1 + 0.25 TL işlem ücreti "
+      "kesilmektedir.");
+  commissionLabel->setStyleSheet(
+      "color: #888888; font-size: 12px; margin-bottom: "
+      "15px; font-style: italic;");
+  mainLayout->addWidget(commissionLabel);
+
   // --- Create Request Button ---
   QHBoxLayout *topButtonsLayout = new QHBoxLayout();
   topButtonsLayout->setSpacing(10);

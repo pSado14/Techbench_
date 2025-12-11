@@ -1,12 +1,15 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QList>
 #include "networkmanager.h" // <-- 1. EKLENDİ
+#include <QList>
+#include <QMainWindow>
+
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
 class AnasayfaWidget;
@@ -18,47 +21,47 @@ class BagisWidget;
 class KayitWidget;
 class QPushButton;
 
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+class MainWindow : public QMainWindow {
+  Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+  MainWindow(QWidget *parent = nullptr);
+  ~MainWindow();
 
 private slots:
-    // Mevcut slotlar...
-    void on_anasayfabuton_clicked();
-    void on_benchmarkbuton_clicked();
-    void on_karsilastirmabuton_clicked();
-    void on_yardimbuton_clicked();
-    void on_girisyapbuton_clicked();
-    void on_bagisyapbuton_clicked();
+  // Mevcut slotlar...
+  void on_anasayfabuton_clicked();
+  void on_benchmarkbuton_clicked();
+  void on_karsilastirmabuton_clicked();
+  void on_yardimbuton_clicked();
+  void on_girisyapbuton_clicked();
+  void on_bagisyapbuton_clicked();
 
-    // --- 2. YENİ: HESAP SİLME SLOTU ---
-    void on_hesapSilmeIstegi_geldi();
+  // --- 2. YENİ: HESAP SİLME SLOTU ---
+  void on_hesapSilmeIstegi_geldi();
 
 private:
-    Ui::MainWindow *ui;
+  Ui::MainWindow *ui;
 
-    AnasayfaWidget      *m_anasayfa;
-    BenchmarkWidget     *m_benchmark;
-    KarsilastirmaWidget *m_karsilastirma;
-    YardimWidget        *m_yardim;
-    GirisWidget         *m_giris;
-    BagisWidget         *m_bagis;
-    KayitWidget         *m_kayit;
+  AnasayfaWidget *m_anasayfa;
+  BenchmarkWidget *m_benchmark;
+  KarsilastirmaWidget *m_karsilastirma;
+  YardimWidget *m_yardim;
+  GirisWidget *m_giris;
+  BagisWidget *m_bagis;
+  KayitWidget *m_kayit;
 
-    QList<QPushButton*> menuButtons;
-    void updateButtonStyles(QPushButton* clickedButton);
-    void setupPages();
-    void setupMenuButtons();
+  QList<QPushButton *> menuButtons;
+  void updateButtonStyles(QPushButton *clickedButton);
+  void setupPages();
+  void setupMenuButtons();
 
-    bool userIsLoggedIn;
-    void setLoginState(bool loggedIn);
+  bool userIsLoggedIn;
+  void setLoginState(bool loggedIn);
 
-    // --- 3. YENİ DEĞİŞKENLER ---
-    QString currentUsername;    // Kim giriş yaptı?
-    NetworkManager *netManager; // Silme isteği göndermek için
+  // --- 3. YENİ DEĞİŞKENLER ---
+  QString currentUsername;    // Kim giriş yaptı?
+  NetworkManager *netManager; // Silme isteği göndermek için
+  void resetAllPages();       // --- YENİ: Tüm sayfaları sıfırlama ---
 };
 #endif // MAINWINDOW_H

@@ -259,17 +259,36 @@ app.post('/delete-account', (req, res) => {
 
     if (!username) return res.status(400).json({ success: false, message: "Kullanıcı adı eksik." });
 
-    const sql = "DELETE FROM kullanicilar WHERE kullanici_adi = ?";
-    db.query(sql, [username], (err, result) => {
-        if (err) {
-            console.error("Silme Hatası:", err);
-            res.status(500).json({ success: false, message: "Veritabanı hatası." });
-        } else if (result.affectedRows === 0) {
-            res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
-        } else {
-            console.log("Kullanıcı silindi:", username);
-            res.status(200).json({ success: true, message: "Hesap ve tum veriler silindi." });
-        }
+    // 1. Test gecmisini sil
+    const sqlDeleteHistory = "DELETE FROM test_history WHERE username = ?";
+    db.query(sqlDeleteHistory, [username], (err1) => {
+        if (err1) console.error("History silme hatasi:", err1);
+
+        // 2. Bagis isteklerini sil
+        const sqlDeleteRequests = "DELETE FROM donation_requests WHERE username = ?";
+        db.query(sqlDeleteRequests, [username], (err2) => {
+            if (err2) console.error("Requests silme hatasi:", err2);
+
+            // 3. Islemleri (Transactions) sil - hem gonderen hem alan olarak
+            const sqlDeleteTransactions = "DELETE FROM transactions WHERE sender_username = ? OR receiver_username = ?";
+            db.query(sqlDeleteTransactions, [username, username], (err3) => {
+                if (err3) console.error("Transactions silme hatasi:", err3);
+
+                // 4. Kullaniciyi sil
+                const sqlDeleteUser = "DELETE FROM kullanicilar WHERE kullanici_adi = ?";
+                db.query(sqlDeleteUser, [username], (err, result) => {
+                    if (err) {
+                        console.error("Silme Hatası:", err);
+                        res.status(500).json({ success: false, message: "Veritabanı hatası." });
+                    } else if (result.affectedRows === 0) {
+                        res.status(404).json({ success: false, message: "Kullanıcı bulunamadı." });
+                    } else {
+                        console.log("Kullanıcı ve tüm verileri silindi:", username);
+                        res.status(200).json({ success: true, message: "Hesap ve tüm veriler başarıyla silindi." });
+                    }
+                });
+            });
+        });
     });
 });
 

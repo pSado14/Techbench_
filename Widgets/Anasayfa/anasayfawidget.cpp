@@ -48,7 +48,7 @@ AnasayfaWidget::AnasayfaWidget(QWidget *parent)
   connect(this, &AnasayfaWidget::priceCheckRequested, this,
           &AnasayfaWidget::checkPrice);
 
-  // Otomatik tarama başlatıldı - İPTAL (Kullanıcı isteği)
+  // Otomatik tarama başlatıldı - İPTAL
   // taraVeGuncelle();
 }
 
@@ -221,12 +221,11 @@ void AnasayfaWidget::taraVeGuncelle() {
   }
 
   // Label'ları güncelle (Multi-line)
-  ui->cpu_hiz_label->setText("Hız:<br>Önbellek:");
-  if (ui->cpu_clock_label->text() != "-") {
-    ui->cpu_clock_label->setText(ui->cpu_clock_label->text() + "<br>" +
-                                 cacheText);
-  } else {
-    ui->cpu_clock_label->setText("-<br>" + cacheText);
+  // Label'ları güncelle
+  ui->cpu_hiz_label->setText("Hız:");
+  ui->cpu_cache_value_label->setText(cacheText);
+  if (ui->cpu_clock_label->text() == "-") {
+    ui->cpu_clock_label->setText("-");
   }
 
   // ==========================
@@ -293,26 +292,43 @@ void AnasayfaWidget::taraVeGuncelle() {
   QString nvidiaMemType = getHardwareInfo(
       "nvidia-smi", {"--query-gpu=memory.type", "--format=csv,noheader"});
 
-  if (nvidiaMemType != "0" && !nvidiaMemType.isEmpty()) {
+  if (nvidiaMemType != "0" && !nvidiaMemType.isEmpty() &&
+      !nvidiaMemType.contains("not a valid field", Qt::CaseInsensitive) &&
+      !nvidiaMemType.contains("failed", Qt::CaseInsensitive)) {
     gpuMemType = nvidiaMemType;
   } else {
     // Bulunamazsa genel bir tahmin veya boş
     // wmic ile VideoMemoryType 2 (Unknown) dönebilir, güvenilmez.
     // Harici GPU ise genelde GDDR'dır.
-    if (selectedGpuName.contains("NVIDIA") || selectedGpuName.contains("AMD") ||
-        selectedGpuName.contains("Radeon") || selectedGpuName.contains("RTX") ||
-        selectedGpuName.contains("GTX")) {
+    // İsimden tahmin etme (User snippet logic)
+    QString upperGpuName = selectedGpuName.toUpper();
+    if (upperGpuName.contains("RTX 40"))
+      gpuMemType = "GDDR6X / GDDR6";
+    else if (upperGpuName.contains("RTX 30"))
+      gpuMemType = "GDDR6"; // 3050 Ti GDDR6 kullanir
+    else if (upperGpuName.contains("RTX 20"))
+      gpuMemType = "GDDR6";
+    else if (upperGpuName.contains("GTX 16"))
+      gpuMemType = "GDDR5 / GDDR6";
+    else if (upperGpuName.contains("GTX 10"))
+      gpuMemType = "GDDR5 / GDDR5X";
+    else if (selectedGpuName.contains("NVIDIA") ||
+             selectedGpuName.contains("AMD") ||
+             selectedGpuName.contains("Radeon") ||
+             selectedGpuName.contains("RTX") ||
+             selectedGpuName.contains("GTX")) {
       gpuMemType = "GDDR";
     }
   }
 
-  ui->gpu_hiz_label->setText("Hız:<br>Bellek Tipi:");
+  ui->gpu_hiz_label->setText("Hız:");
+  ui->gpu_memtype_value_label->setText(gpuMemType);
 
   QString clockText = "-";
   if (gpuClock != "0" && !gpuClock.isEmpty()) {
     clockText = gpuClock;
   }
-  ui->gpu_clock_label->setText(clockText + "<br>" + gpuMemType);
+  ui->gpu_clock_label->setText(clockText);
 
   // ==========================
   // 3. RAM (BELLEK) BİLGİLERİ
@@ -371,15 +387,20 @@ void AnasayfaWidget::taraVeGuncelle() {
     else if (typeInt == 26)
       ramType = "DDR4";
     else if (typeInt == 30)
-      ramType = "DDR4"; // LPDDR4
+      ramType = "LPDDR4";
     else if (typeInt == 34)
       ramType = "DDR5";
+    else if (typeInt == 35)
+      ramType = "LPDDR5";
     else if (typeInt == 0)
       ramType = "DDR5"; // Genelde yeni sistemlerde 0
+    else
+      ramType = "Bilinmiyor (" + QString::number(typeInt) + ")";
   }
 
-  ui->ram_hiz_label->setText("Hız:<br>Türü:");
-  ui->ram_clock_label->setText(ramSpeed + " MHz<br>" + ramType);
+  ui->ram_hiz_label->setText("Hız:");
+  ui->ram_type_value_label->setText(ramType);
+  ui->ram_clock_label->setText(ramSpeed + " MHz");
 
   // RAM Modelini Çek (Manufacturer + PartNumber)
   QString ramManuf =
@@ -540,13 +561,20 @@ void AnasayfaWidget::bilgileriSifirla() {
   ui->cpu_model_label->setText("Taranmadı");
   ui->cpu_cores_label->setText("-");
   ui->cpu_clock_label->setText("-");
+  ui->cpu_hiz_label->setText("Hız:");
+  ui->cpu_cache_value_label->setText("-");
 
   ui->gpu_model_label->setText("Taranmadı");
   ui->gpu_vram_label->setText("-");
+  ui->gpu_clock_label->setText("-");
+  ui->gpu_hiz_label->setText("Hız:");
+  ui->gpu_memtype_value_label->setText("-");
 
   ui->ram_gb_label->setText("-");
   ui->ram_gb_label->setText("-");
   ui->ram_clock_label->setText("-");
+  ui->ram_hiz_label->setText("Hız:");
+  ui->ram_type_value_label->setText("-");
   if (ui->ram_model_label_2)
     ui->ram_model_label_2->setText("Taranmadı");
 
@@ -705,7 +733,7 @@ void AnasayfaWidget::setPrice(const QString &type, const QString &price,
   }
 }
 
-void AnasayfaWidget::setToplamPuan(int score) {
+void AnasayfaWidget::setToplamPuan(int score, bool emitSignal) {
   // Sadece toplam puanı güncelle, diğerlerini sıfırla
   m_cpuScore = 0;
   m_gpuScore = 0;
@@ -818,7 +846,9 @@ void AnasayfaWidget::setToplamPuan(int score) {
   }
 
   // Sinyal Gönder
-  emit puanlarGuncellendi(totalScore);
+  if (emitSignal) {
+    emit puanlarGuncellendi(totalScore);
+  }
 }
 
 void AnasayfaWidget::on_hesapSilButon_clicked() { emit hesapSilmeTiklandi(); }

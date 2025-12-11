@@ -81,8 +81,7 @@ void MainWindow::on_hesapSilmeIstegi_geldi() {
 
         // Çıkış işlemlerini yap
         setLoginState(false);
-        m_anasayfa->bilgileriSifirla();
-        currentUsername = "";
+        resetAllPages(); // <-- YENİ: Tüm sayfaları sıfırla
         ui->stackedWidget->setCurrentWidget(m_anasayfa);
       } else {
         ModernMessageBox::critical(this, "Hata", "Silinemedi: " + message);
@@ -150,15 +149,9 @@ void MainWindow::on_girisyapbuton_clicked() {
 
     if (reply) {
       setLoginState(false);
+      resetAllPages(); // <-- YENİ: Tüm sayfaları sıfırla
 
-      m_anasayfa->bilgileriSifirla(); // Bilgileri temizle
-      currentUsername = "";           // İsmi unut
-      m_karsilastirma->setKullaniciBilgileri(
-          "");                             // Karşılaştırma sayfasını sıfırla
-      m_karsilastirma->showLoginWarning(); // <-- YENİ: Çıkış yapınca listeyi
-                                           // temizle ve uyar
-      m_bagis->setKullaniciAdi(""); // --- YENİ: Bağış sayfasını sıfırla ---
-      m_bagis->setEmail("");        // --- YENİ: Email'i de sıfırla ---
+      ModernMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
 
       ModernMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
       ui->stackedWidget->setCurrentWidget(m_anasayfa);
@@ -254,7 +247,7 @@ void MainWindow::setupMenuButtons() {
 
                 // Anasayfa'yı güncelle
                 m_anasayfa->setSistemBilgileri(cpu, gpu, ram);
-                m_anasayfa->setToplamPuan(score);
+                m_anasayfa->setToplamPuan(score, false);
 
                 // Karşılaştırma Merkezi'ni güncelle
                 m_karsilastirma->setSizinSisteminiz(cpu, gpu, ram);
@@ -467,4 +460,24 @@ void MainWindow::on_bagisyapbuton_clicked() {
   }
   ui->stackedWidget->setCurrentWidget(m_bagis);
   updateButtonStyles(nullptr);
+}
+
+void MainWindow::resetAllPages() {
+  // 1. Anasayfa
+  m_anasayfa->bilgileriSifirla();
+
+  // 2. Karşılaştırma
+  m_karsilastirma->setKullaniciBilgileri("");
+  m_karsilastirma->showLoginWarning();
+
+  // 3. Bağış
+  m_bagis->setKullaniciAdi("");
+  m_bagis->setEmail("");
+
+  // 4. Benchmark
+  m_benchmark->setUsername("");
+  m_benchmark->updateHistoryList(QList<QVariantMap>()); // Boş liste ile temizle
+
+  // 5. Genel Değişkenler
+  currentUsername = "";
 }

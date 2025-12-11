@@ -23,7 +23,7 @@ public:
                           const QString &ram);
   void setPrice(const QString &type, const QString &price,
                 const QString &source);
-  void setToplamPuan(int score);
+  void setToplamPuan(int score, bool emitSignal = true);
   void taraVeGuncelle();
   void setPuanlar(int cpuScore, int gpuScore, int ramScore);
 

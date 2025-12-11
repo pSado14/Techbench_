@@ -111,27 +111,41 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
        </widget>
       </item>
       <item row="5" column="0">
-       <widget class="QLabel" name="cpu_price_label">
+       <widget class="QLabel" name="cpu_cache_label">
         <property name="text">
-         <string>Fiyat:</string>
+         <string>Önbellek:</string>
         </property>
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QLabel" name="cprice_label">
+       <widget class="QLabel" name="cpu_cache_value_label">
         <property name="text">
          <string>-</string>
         </property>
        </widget>
       </item>
       <item row="6" column="0">
+       <widget class="QLabel" name="cpu_price_label">
+        <property name="text">
+         <string>Fiyat:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLabel" name="cprice_label">
+        <property name="text">
+         <string>-</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
        <widget class="QLabel" name="cpu_score_label_2">
         <property name="text">
          <string>OrtalamaPuan:</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QLabel" name="cpu_score_label">
         <property name="text">
          <string>-</string>
@@ -208,24 +222,24 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="5" column="1">
-       <widget class="QLabel" name="g_price_label">
+      <item row="3" column="0">
+       <widget class="QLabel" name="vram_label">
+        <property name="text">
+         <string>VRAM:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="gpu_vram_label">
         <property name="text">
          <string>-</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="gpu_score_label_2">
+      <item row="4" column="0">
+       <widget class="QLabel" name="gpu_hiz_label">
         <property name="text">
-         <string>OrtalamaPuan:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLabel" name="gpu_score_label">
-        <property name="text">
-         <string>-</string>
+         <string>Hız:</string>
         </property>
        </widget>
       </item>
@@ -237,28 +251,42 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
        </widget>
       </item>
       <item row="5" column="0">
+       <widget class="QLabel" name="gpu_memtype_label">
+        <property name="text">
+         <string>Bellek Tipi:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLabel" name="gpu_memtype_value_label">
+        <property name="text">
+         <string>-</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
        <widget class="QLabel" name="gpu_price_label">
         <property name="text">
          <string>Fiyat:</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="gpu_hiz_label">
+      <item row="6" column="1">
+       <widget class="QLabel" name="g_price_label">
         <property name="text">
-         <string>Hız:</string>
+         <string>-</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="vram_label">
+      <item row="7" column="0">
+       <widget class="QLabel" name="gpu_score_label_2">
         <property name="text">
-         <string>VRAM:</string>
+         <string>OrtalamaPuan:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLabel" name="gpu_vram_label">
+      <item row="7" column="1">
+       <widget class="QLabel" name="gpu_score_label">
         <property name="text">
          <string>-</string>
         </property>
@@ -334,24 +362,24 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="5" column="1">
-       <widget class="QLabel" name="r_price_label">
+      <item row="3" column="0">
+       <widget class="QLabel" name="kapasite_label">
+        <property name="text">
+         <string>Kapasite:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="ram_gb_label">
         <property name="text">
          <string>-</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="ram_score_label">
+      <item row="4" column="0">
+       <widget class="QLabel" name="ram_hiz_label">
         <property name="text">
-         <string>OrtalamaPuan:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLabel" name="ram_score_label_2">
-        <property name="text">
-         <string>-</string>
+         <string>Hız:</string>
         </property>
        </widget>
       </item>
@@ -363,28 +391,42 @@ QLabel { background-color: transparent; color: #ffffff; }</string>
        </widget>
       </item>
       <item row="5" column="0">
+       <widget class="QLabel" name="ram_type_label">
+        <property name="text">
+         <string>Türü:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLabel" name="ram_type_value_label">
+        <property name="text">
+         <string>-</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
        <widget class="QLabel" name="ram_price_label">
         <property name="text">
          <string>Fiyat:</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="ram_hiz_label">
+      <item row="6" column="1">
+       <widget class="QLabel" name="r_price_label">
         <property name="text">
-         <string>Hız:</string>
+         <string>-</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="kapasite_label">
+      <item row="7" column="0">
+       <widget class="QLabel" name="ram_score_label">
         <property name="text">
-         <string>Kapasite:</string>
+         <string>OrtalamaPuan:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLabel" name="ram_gb_label">
+      <item row="7" column="1">
+       <widget class="QLabel" name="ram_score_label_2">
         <property name="text">
          <string>-</string>
         </property>
