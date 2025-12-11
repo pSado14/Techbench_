@@ -22,7 +22,7 @@ include_directories(
     Widgets/Bagis
     Widgets/Yardim
     Widgets/Main
-    Widgets/PriceSearch
+
     Network
 )
 
@@ -63,7 +63,7 @@ set(PROJECT_SOURCES
         Widgets/Yardim/yardimwidget.ui
         Network/networkmanager.cpp
         Network/networkmanager.h
-        Network/networkmanager.ui
+
 
         Widgets/Benchmark/benchmarkworker.cpp
         Widgets/Benchmark/benchmarkworker.h

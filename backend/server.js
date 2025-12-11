@@ -1,4 +1,5 @@
-﻿const express = require('express');
+﻿require('dotenv').config();
+const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -21,9 +22,9 @@ function logToFile(message) {
 const Iyzipay = require('iyzipay');
 
 const iyzipay = new Iyzipay({
-    apiKey: 'sandbox-3WU8BN1TUtdA1df0Cs3yrkaMyO9gLpTk',
-    secretKey: 'sandbox-KyqTWD6r1bsJqzm6fhIYWpVpSV7qSkXh',
-    uri: 'https://sandbox-api.iyzipay.com'
+    apiKey: process.env.IYZICO_API_KEY,
+    secretKey: process.env.IYZICO_SECRET_KEY,
+    uri: process.env.IYZICO_BASE_URL
 });
 
 const app = express();
@@ -33,10 +34,10 @@ app.use(cors());
 
 // --- MYSQL BAĞLANTISI ---
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Melekirem14.',
-    database: 'benchmark_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
 });
 
 db.connect((err) => {
@@ -146,8 +147,8 @@ const verificationCodes = {};
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'sadettinboylan80@gmail.com',
-        pass: 'zaei jepx rppc mwuu'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
@@ -634,7 +635,7 @@ app.post('/forgot-password', (req, res) => {
         verificationCodes[email] = { code, expires };
 
         const mailOptions = {
-            from: 'Techbench App <sadettinboylan80@gmail.com>',
+            from: `Techbench App <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'Techbench Şifre Sıfırlama Kodu',
             text: `Doğrulama kodunuz: ${code}`

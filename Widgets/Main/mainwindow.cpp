@@ -233,9 +233,6 @@ void MainWindow::setupMenuButtons() {
             updateButtonStyles(ui->anasayfabuton);
             setLoginState(true);
 
-            // Giriş yapınca otomatik tara - İPTAL EDİLDİ (Kullanıcı isteği)
-            // m_anasayfa->taraVeGuncelle();
-
             if (!userData.isEmpty()) {
               QString cpu = userData["cpu"].toString();
               QString gpu = userData["gpu"].toString();
@@ -433,8 +430,6 @@ void MainWindow::on_karsilastirmabuton_clicked() {
         currentUsername,
         [=](bool success, QList<QVariantMap> history, QString message) {
           if (success) {
-            // m_karsilastirma->updateHistoryList(history);
-            // // ARTIK BURADA DEĞİL
           }
         });
   }
