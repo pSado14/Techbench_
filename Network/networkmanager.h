@@ -117,6 +117,12 @@ public:
       const QString &iban, const QString &address,
       std::function<void(bool success, QString message)> callback);
 
+  // --- YENİ: Liderlik Tablosunu Getirme ---
+  void getLeaderboard(
+      std::function<void(bool success, QList<QVariantMap> leaderboard,
+                         QString message)>
+          callback);
+
 private:
   QNetworkAccessManager *manager;
   const QString BASE_URL = "http://127.0.0.1:3000"; // Node.js sunucu adresiniz

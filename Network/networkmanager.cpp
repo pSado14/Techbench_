@@ -758,3 +758,43 @@ void NetworkManager::registerSubMerchant(
     reply->deleteLater();
   });
 }
+
+// --- LİDERLİK TABLOSUNU GETİRME ---
+void NetworkManager::getLeaderboard(
+    std::function<void(bool, QList<QVariantMap>, QString)> callback) {
+  QUrl url(BASE_URL + "/leaderboard");
+  QNetworkRequest request(url);
+
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    QByteArray responseData = reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(responseData);
+
+    bool success = false;
+    QString message = "Veri Çekme Hatası";
+    QList<QVariantMap> leaderboardList;
+
+    if (reply->error() == QNetworkReply::NoError) {
+      if (jsonResponse.isArray()) {
+        QJsonArray jsonArray = jsonResponse.array();
+        for (const QJsonValue &value : jsonArray) {
+          leaderboardList.append(value.toObject().toVariantMap());
+        }
+        success = true;
+        message = "Liderlik Tablosu Getirildi";
+      } else if (jsonResponse.isObject()) {
+        QJsonObject obj = jsonResponse.object();
+        if (obj.contains("success") && !obj["success"].toBool()) {
+          success = false;
+          message = obj["message"].toString();
+        }
+      }
+    } else {
+      message = "Bağlantı Hatası: " + reply->errorString();
+    }
+
+    callback(success, leaderboardList, message);
+    reply->deleteLater();
+  });
+}

@@ -22,6 +22,7 @@ include_directories(
     Widgets/Bagis
     Widgets/Yardim
     Widgets/Main
+    Widgets/Liderlik
 
     Network
 )
@@ -61,6 +62,8 @@ set(PROJECT_SOURCES
         Widgets/Yardim/yardimwidget.cpp
         Widgets/Yardim/yardimwidget.h
         Widgets/Yardim/yardimwidget.ui
+        Widgets/Liderlik/liderlikwidget.cpp
+        Widgets/Liderlik/liderlikwidget.h
         Network/networkmanager.cpp
         Network/networkmanager.h
 

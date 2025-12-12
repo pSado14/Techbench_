@@ -1,14 +1,16 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "anasayfawidget.h"
 #include "bagiswidget.h"
 #include "benchmarkwidget.h"
 #include "giriswidget.h"
 #include "karsilastirmawidget.h"
 #include "kayitwidget.h"
+#include "liderlikwidget.h" // <-- EKLENDİ
 #include "moderndialogs.h"
 #include "networkmanager.h"
 #include "ui_mainwindow.h"
 #include "yardimwidget.h"
+#include <QIcon>
 #include <QPushButton>
 
 // ===============================================
@@ -180,6 +182,7 @@ void MainWindow::setupPages() {
   m_giris = new GirisWidget(this);
   m_bagis = new BagisWidget(this);
   m_kayit = new KayitWidget(this);
+  m_liderlik = new LiderlikWidget(this);
 
   ui->stackedWidget->addWidget(m_anasayfa);
   ui->stackedWidget->addWidget(m_benchmark);
@@ -188,14 +191,36 @@ void MainWindow::setupPages() {
   ui->stackedWidget->addWidget(m_giris);
   ui->stackedWidget->addWidget(m_bagis);
   ui->stackedWidget->addWidget(m_kayit);
+  ui->stackedWidget->addWidget(m_liderlik);
+
+  // Connect refresh signal
+  connect(m_liderlik, &LiderlikWidget::refreshRequested, this, [=]() {
+    netManager->getLeaderboard(
+        [=](bool success, QList<QVariantMap> data, QString msg) {
+          if (success)
+            m_liderlik->updateLeaderboard(data);
+          else
+            ModernMessageBox::critical(this, "Hata", msg);
+        });
+  });
 }
 
 // ===============================================
 // MENÜ VE SİNYAL KURULUMU
 // ===============================================
 void MainWindow::setupMenuButtons() {
+  // Create button dynamically
+  ui_liderlikbuton = new QPushButton("  Liderlik Tablosu", this);
+  ui_liderlikbuton->setIcon(QIcon(":/Assets/leaderboard.png"));
+  ui_liderlikbuton->setIconSize(QSize(32, 32));
+  ui_liderlikbuton->setCursor(Qt::PointingHandCursor);
+
+  // Add to layout (Insert before Yardim)
+  ui->solsayfalayout->insertWidget(ui->solsayfalayout->count() - 1,
+                                   ui_liderlikbuton);
+
   menuButtons << ui->anasayfabuton << ui->benchmarkbuton
-              << ui->karsilastirmabuton << ui->yardimbuton;
+              << ui->karsilastirmabuton << ui_liderlikbuton << ui->yardimbuton;
 
   for (QPushButton *btn : menuButtons) {
     btn->setCursor(Qt::PointingHandCursor);
@@ -208,6 +233,8 @@ void MainWindow::setupMenuButtons() {
           &MainWindow::on_benchmarkbuton_clicked);
   connect(ui->karsilastirmabuton, &QPushButton::clicked, this,
           &MainWindow::on_karsilastirmabuton_clicked);
+  connect(ui_liderlikbuton, &QPushButton::clicked, this,
+          &MainWindow::on_liderlikbuton_clicked);
   connect(ui->yardimbuton, &QPushButton::clicked, this,
           &MainWindow::on_yardimbuton_clicked);
   connect(ui->girisyapbuton, &QPushButton::clicked, this,
@@ -471,6 +498,22 @@ void MainWindow::on_benchmarkbuton_clicked() {
         });
   }
 }
+
+void MainWindow::on_liderlikbuton_clicked() {
+  ui->stackedWidget->setCurrentWidget(m_liderlik);
+  updateButtonStyles(ui_liderlikbuton);
+
+  // Sayfa açılınca listeyi güncelle
+  netManager->getLeaderboard(
+      [=](bool success, QList<QVariantMap> data, QString message) {
+        if (success) {
+          m_liderlik->updateLeaderboard(data);
+        } else {
+          qDebug() << "Liderlik tablosu alınamadı:" << message;
+        }
+      });
+}
+
 void MainWindow::on_yardimbuton_clicked() {
   ui->stackedWidget->setCurrentWidget(m_yardim);
   updateButtonStyles(ui->yardimbuton);
@@ -503,4 +546,7 @@ void MainWindow::resetAllPages() {
 
   // 5. Genel Değişkenler
   currentUsername = "";
+
+  // 6. Liderlik
+  m_liderlik->updateLeaderboard({});
 }

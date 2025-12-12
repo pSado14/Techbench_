@@ -2,6 +2,7 @@
 #include "networkmanager.h"
 #include "ui_anasayfawidget.h"
 #include <QDebug>
+#include <QLayoutItem>
 #include <QMessageBox>
 #include <QPainter>
 #include <QProcess>
@@ -51,9 +52,6 @@ AnasayfaWidget::AnasayfaWidget(QWidget *parent)
   // Fiyat kontrol sinyalini bağla
   connect(this, &AnasayfaWidget::priceCheckRequested, this,
           &AnasayfaWidget::checkPrice);
-
-  // Otomatik tarama başlatıldı - İPTAL
-  // taraVeGuncelle();
 }
 
 void AnasayfaWidget::onGpuModelSelected(int index) {
@@ -1080,6 +1078,7 @@ void AnasayfaWidget::setPuanlar(int cpuScore, int gpuScore, int ramScore,
 
   // Toplam puanı hesapla ve sinyal gönder
   int totalScore = m_cpuScore + m_gpuScore + m_ramScore;
+
   if (emitSignal) {
     emit puanlarGuncellendi(totalScore);
   }

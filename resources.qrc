@@ -11,5 +11,6 @@
         <file>Assets/gpu_icon.png</file>
         <file>Assets/cpu_icon.png</file>
         <file>Assets/refresh.png</file>
+        <file>Assets/leaderboard.png</file>
     </qresource>
 </RCC>

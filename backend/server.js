@@ -835,6 +835,19 @@ app.get('/rivals', (req, res) => {
     });
 });
 
+// --- LİDERLİK TABLOSU API ---
+app.get('/leaderboard', (req, res) => {
+    const sql = "SELECT kullanici_adi, score, cpu, gpu, ram, cpu_score, gpu_score, ram_score FROM kullanicilar WHERE score > 0 ORDER BY score DESC LIMIT 50";
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Liderlik Tablosu Hatası:", err);
+            res.status(500).json({ success: false, message: "Veritabanı hatası." });
+        } else {
+            res.status(200).json(results);
+        }
+    });
+});
+
 app.listen(3000, () => {
     console.log('Sunucu 3000 portunda çalışıyor...');
 });

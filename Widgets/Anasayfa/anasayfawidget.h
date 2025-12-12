@@ -2,6 +2,7 @@
 #define ANASAYFAWIDGET_H
 
 #include <QComboBox>
+#include <QFrame>
 #include <QLabel>
 #include <QProcess>
 #include <QWidget>

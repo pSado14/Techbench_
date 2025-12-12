@@ -5,7 +5,6 @@
 #include <QList>
 #include <QMainWindow>
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -19,6 +18,7 @@ class YardimWidget;
 class GirisWidget;
 class BagisWidget;
 class KayitWidget;
+class LiderlikWidget; // <-- EKLENDİ
 class QPushButton;
 
 class MainWindow : public QMainWindow {
@@ -61,7 +61,12 @@ private:
 
   // --- 3. YENİ DEĞİŞKENLER ---
   QString currentUsername;    // Kim giriş yaptı?
-  NetworkManager *netManager; // Silme isteği göndermek için
-  void resetAllPages();       // --- YENİ: Tüm sayfaları sıfırlama ---
+  NetworkManager *netManager; // Silme işlemi için
+  void resetAllPages();       // Tüm sayfaları sıfırlama
+
+  // --- 4. LİDERLİK TABLOSU ---
+  LiderlikWidget *m_liderlik;
+  QPushButton *ui_liderlikbuton;
+  void on_liderlikbuton_clicked();
 };
 #endif // MAINWINDOW_H
