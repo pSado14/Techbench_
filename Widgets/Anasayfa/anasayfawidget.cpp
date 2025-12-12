@@ -607,6 +607,10 @@ void AnasayfaWidget::setKullaniciBilgileri(const QString &ad) {
   }
 
   // Global Sıralamayı Çek
+  updateGlobalRanking(ad);
+}
+
+void AnasayfaWidget::updateGlobalRanking(const QString &ad) {
   NetworkManager *nm = new NetworkManager(this);
   qDebug() << "Sıralama isteniyor için kullanıcı:" << ad;
   nm->getUserRanking(ad, [=](bool success, int ranking, QString message) {

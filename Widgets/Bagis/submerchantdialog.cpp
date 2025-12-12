@@ -1,4 +1,5 @@
 #include "submerchantdialog.h"
+#include "moderndialogs.h"
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -182,25 +183,15 @@ void SubMerchantDialog::setupUi() {
   layout->addWidget(addressLabel);
   layout->addWidget(addressEdit);
 
-  // --- Info Box ---
-  QFrame *infoBox = new QFrame();
-  infoBox->setStyleSheet("QFrame { background-color: rgba(79, 172, 254, 0.1); "
-                         "border: 1px solid #4facfe; border-radius: 8px; }");
-  QHBoxLayout *infoLayout = new QHBoxLayout(infoBox);
-  infoLayout->setContentsMargins(10, 8, 10, 8);
-
-  QLabel *infoIcon = new QLabel("ℹ️");
-  infoIcon->setStyleSheet("font-size: 16px; background: transparent;");
+  // --- Info Text ---
   QLabel *infoText =
       new QLabel("Bu bilgiler Iyzico ödeme sistemi için gereklidir ve "
                  "güvenli şekilde saklanır.");
   infoText->setWordWrap(true);
-  infoText->setStyleSheet(
-      "color: #4facfe; font-size: 11px; background: transparent;");
-
-  infoLayout->addWidget(infoIcon);
-  infoLayout->addWidget(infoText);
-  layout->addWidget(infoBox);
+  infoText->setAlignment(Qt::AlignCenter);
+  infoText->setStyleSheet("color: #4facfe; font-size: 11px; background: "
+                          "transparent; margin-top: 5px;");
+  layout->addWidget(infoText);
 
   // --- Buttons ---
   QHBoxLayout *btnLayout = new QHBoxLayout();
@@ -295,41 +286,44 @@ void SubMerchantDialog::onSaveClicked() {
 
   // Check required fields
   if (name.isEmpty()) {
-    QMessageBox::warning(this, "Eksik Bilgi", "Lütfen adınızı giriniz.");
+    ModernMessageBox::warning(this, "Eksik Bilgi", "Lütfen adınızı giriniz.");
     nameEdit->setFocus();
     return;
   }
 
   if (surname.isEmpty()) {
-    QMessageBox::warning(this, "Eksik Bilgi", "Lütfen soyadınızı giriniz.");
+    ModernMessageBox::warning(this, "Eksik Bilgi",
+                              "Lütfen soyadınızı giriniz.");
     surnameEdit->setFocus();
     return;
   }
 
   if (email.isEmpty()) {
-    QMessageBox::warning(this, "Eksik Bilgi",
-                         "Lütfen e-posta adresinizi giriniz.");
+    ModernMessageBox::warning(this, "Eksik Bilgi",
+                              "Lütfen e-posta adresinizi giriniz.");
     emailEdit->setFocus();
     return;
   }
 
   if (!validateIdentityNumber(identity)) {
-    QMessageBox::warning(this, "Geçersiz TC",
-                         "TC Kimlik numarası 11 haneli olmalıdır ve 0 ile "
-                         "başlamamalıdır.");
+    ModernMessageBox::warning(this, "Geçersiz TC",
+                              "TC Kimlik numarası 11 haneli olmalıdır ve 0 ile "
+                              "başlamamalıdır.");
     identityEdit->setFocus();
     return;
   }
 
   if (!validateIban(iban)) {
-    QMessageBox::warning(this, "Geçersiz IBAN",
-                         "IBAN 'TR' ile başlamalı ve 26 karakter olmalıdır.");
+    ModernMessageBox::warning(
+        this, "Geçersiz IBAN",
+        "IBAN 'TR' ile başlamalı ve 26 karakter olmalıdır.");
     ibanEdit->setFocus();
     return;
   }
 
   if (address.isEmpty()) {
-    QMessageBox::warning(this, "Eksik Bilgi", "Lütfen adresinizi giriniz.");
+    ModernMessageBox::warning(this, "Eksik Bilgi",
+                              "Lütfen adresinizi giriniz.");
     addressEdit->setFocus();
     return;
   }

@@ -28,6 +28,7 @@ public:
   void taraVeGuncelle();
   void setPuanlar(int cpuScore, int gpuScore, int ramScore,
                   bool emitSignal = true);
+  void updateGlobalRanking(const QString &username);
 
   void bilgileriSifirla();
   void checkPrice(const QString &productName, const QString &type);

@@ -563,8 +563,8 @@ app.post('/payment/initialize', (req, res) => {
                 enabledInstallments: [2, 3, 6, 9],
                 buyer: {
                     id: 'BUYER_' + senderUsername,
-                    name: user.name || 'John',
-                    surname: user.surname || 'Doe',
+                    name: user.name || senderUsername,
+                    surname: user.surname || user.name || senderUsername,
                     gsmNumber: '+905350000000',
                     email: user.email || 'email@email.com',
                     identityNumber: '74300864791',
@@ -577,14 +577,14 @@ app.post('/payment/initialize', (req, res) => {
                     zipCode: '34000'
                 },
                 shippingAddress: {
-                    contactName: (user.name || 'John') + ' ' + (user.surname || 'Doe'),
+                    contactName: (user.name || senderUsername) + ' ' + (user.surname || user.name || senderUsername),
                     city: 'Istanbul',
                     country: 'Turkey',
                     address: 'Istanbul, Turkey',
                     zipCode: '34000'
                 },
                 billingAddress: {
-                    contactName: (user.name || 'John') + ' ' + (user.surname || 'Doe'),
+                    contactName: (user.name || senderUsername) + ' ' + (user.surname || user.name || senderUsername),
                     city: 'Istanbul',
                     country: 'Turkey',
                     address: 'Istanbul, Turkey',

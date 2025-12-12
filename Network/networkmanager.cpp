@@ -633,6 +633,7 @@ void NetworkManager::initializePayment(
 
   QJsonObject userObj;
   userObj["name"] = username;
+  userObj["surname"] = username; // Send username as surname to avoid "Doe"
   userObj["email"] = email;
   json["user"] = userObj;
 

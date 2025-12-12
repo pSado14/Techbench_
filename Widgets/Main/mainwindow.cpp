@@ -210,7 +210,7 @@ void MainWindow::setupPages() {
 // ===============================================
 void MainWindow::setupMenuButtons() {
   // Create button dynamically
-  ui_liderlikbuton = new QPushButton("  Liderlik Tablosu", this);
+  ui_liderlikbuton = new QPushButton(" Liderlik Tablosu", this);
   ui_liderlikbuton->setIcon(QIcon(":/Assets/leaderboard.png"));
   ui_liderlikbuton->setIconSize(QSize(32, 32));
   ui_liderlikbuton->setCursor(Qt::PointingHandCursor);
@@ -372,6 +372,9 @@ void MainWindow::setupMenuButtons() {
                               m_benchmark->updateHistoryList(history);
                             }
                           });
+
+                      // --- YENİ: Global Sıralamayı Güncelle ---
+                      m_anasayfa->updateGlobalRanking(currentUsername);
                     } else {
                       qDebug() << "Skor kaydedilemedi:" << message;
                     }
@@ -435,10 +438,20 @@ void MainWindow::updateButtonStyles(QPushButton *clickedButton) {
       "   outline: none; "
       "}";
 
-  for (QPushButton *button : menuButtons)
-    button->setStyleSheet(defaultStyle);
-  if (clickedButton)
-    clickedButton->setStyleSheet(selectedStyle);
+  for (QPushButton *button : menuButtons) {
+    QString style = defaultStyle;
+    if (button == ui_liderlikbuton) {
+      style.replace("padding-left: 20px;", "padding-left: 15px;");
+    }
+    button->setStyleSheet(style);
+  }
+  if (clickedButton) {
+    QString style = selectedStyle;
+    if (clickedButton == ui_liderlikbuton) {
+      style.replace("padding-left: 20px;", "padding-left: 15px;");
+    }
+    clickedButton->setStyleSheet(style);
+  }
 }
 
 void MainWindow::on_anasayfabuton_clicked() {

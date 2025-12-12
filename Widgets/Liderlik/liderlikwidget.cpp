@@ -18,13 +18,27 @@ void LiderlikWidget::setupUi() {
 
   // Table
   tableWidget = new QTableWidget(this);
-  tableWidget->setColumnCount(6);
-  tableWidget->setHorizontalHeaderLabels(
-      {"Sıra", "Kullanıcı", "Toplam Puan", "CPU", "GPU", "RAM"});
+  tableWidget->setColumnCount(9);
+  tableWidget->setHorizontalHeaderLabels({"Sıra", "Kullanıcı", "Toplam Puan",
+                                          "CPU", "CPU Puan", "GPU", "GPU Puan",
+                                          "RAM", "RAM Puan"});
   tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
   tableWidget->horizontalHeader()->setSectionResizeMode(
-      0, QHeaderView::ResizeToContents); // Rank column smaller
+      0, QHeaderView::ResizeToContents); // Rank
+  tableWidget->horizontalHeader()->setSectionResizeMode(
+      1, QHeaderView::ResizeToContents); // User
+  tableWidget->horizontalHeader()->setSectionResizeMode(
+      2, QHeaderView::ResizeToContents); // Total Score
+  tableWidget->horizontalHeader()->setSectionResizeMode(
+      4, QHeaderView::ResizeToContents); // CPU Score
+  tableWidget->horizontalHeader()->setSectionResizeMode(
+      6, QHeaderView::ResizeToContents); // GPU Score
+  tableWidget->horizontalHeader()->setSectionResizeMode(
+      8, QHeaderView::ResizeToContents); // RAM Score
   tableWidget->verticalHeader()->setVisible(false);
+  tableWidget->verticalHeader()->setDefaultSectionSize(
+      60);                        // Increase row height
+  tableWidget->setWordWrap(true); // Enable word wrap
   tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
   tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   tableWidget->setAlternatingRowColors(true);
@@ -76,21 +90,44 @@ void LiderlikWidget::updateLeaderboard(const QList<QVariantMap> &data) {
 
     QTableWidgetItem *userItem =
         new QTableWidgetItem(user["kullanici_adi"].toString());
+    userItem->setToolTip(user["kullanici_adi"].toString());
+    userItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
     QTableWidgetItem *scoreItem =
         new QTableWidgetItem(QString::number(user["score"].toInt()));
     scoreItem->setTextAlignment(Qt::AlignCenter);
     scoreItem->setFont(QFont("Segoe UI", 9, QFont::Bold));
 
     QTableWidgetItem *cpuItem = new QTableWidgetItem(user["cpu"].toString());
+    cpuItem->setToolTip(user["cpu"].toString());
+    cpuItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    QTableWidgetItem *cpuScoreItem =
+        new QTableWidgetItem(QString::number(user["cpu_score"].toInt()));
+    cpuScoreItem->setTextAlignment(Qt::AlignCenter);
+
     QTableWidgetItem *gpuItem = new QTableWidgetItem(user["gpu"].toString());
+    gpuItem->setToolTip(user["gpu"].toString());
+    gpuItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    QTableWidgetItem *gpuScoreItem =
+        new QTableWidgetItem(QString::number(user["gpu_score"].toInt()));
+    gpuScoreItem->setTextAlignment(Qt::AlignCenter);
+
     QTableWidgetItem *ramItem = new QTableWidgetItem(user["ram"].toString());
+    ramItem->setToolTip(user["ram"].toString());
+    ramItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    QTableWidgetItem *ramScoreItem =
+        new QTableWidgetItem(QString::number(user["ram_score"].toInt()));
+    ramScoreItem->setTextAlignment(Qt::AlignCenter);
 
     tableWidget->setItem(row, 0, rankItem);
     tableWidget->setItem(row, 1, userItem);
     tableWidget->setItem(row, 2, scoreItem);
     tableWidget->setItem(row, 3, cpuItem);
-    tableWidget->setItem(row, 4, gpuItem);
-    tableWidget->setItem(row, 5, ramItem);
+    tableWidget->setItem(row, 4, cpuScoreItem);
+    tableWidget->setItem(row, 5, gpuItem);
+    tableWidget->setItem(row, 6, gpuScoreItem);
+    tableWidget->setItem(row, 7, ramItem);
+    tableWidget->setItem(row, 8, ramScoreItem);
 
     rank++;
   }
