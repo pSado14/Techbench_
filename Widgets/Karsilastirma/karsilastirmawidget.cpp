@@ -278,4 +278,9 @@ void KarsilastirmaWidget::reset() {
   if (ui->rakip_puan_deger) {
     ui->rakip_puan_deger->setText("0 pts");
   }
+
+  // Karşılaştır butonunu devre dışı bırak (giriş yapılmamış)
+  if (ui->karsilastir_buton) {
+    ui->karsilastir_buton->setEnabled(false);
+  }
 }

@@ -848,6 +848,41 @@ app.get('/leaderboard', (req, res) => {
     });
 });
 
+// --- DESTEKÇILER API (Top Supporters) ---
+app.get('/top-supporters', (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ success: false, message: "Kullanıcı adı gerekli." });
+
+    // amount'ları topla
+    const sql = `
+        SELECT sender_username, 
+               SUM(amount) as total_amount, 
+               COUNT(*) as donation_count
+        FROM transactions
+        WHERE receiver_username = ?
+        GROUP BY sender_username
+        ORDER BY SUM(amount) DESC
+        LIMIT 10
+    `;
+
+    db.query(sql, [username], (err, results) => {
+        if (err) {
+            console.error("Destekçiler Getirme Hatası:", err);
+            res.status(500).json({ success: false, message: "Veritabanı hatası: " + err.message });
+        } else {
+            // MySQL2 bazen DECIMAL'ı string döndürür, düzeltelim
+            const formattedResults = results.map(row => ({
+                sender_username: row.sender_username,
+                total_amount: parseFloat(row.total_amount) || 0,
+                donation_count: parseInt(row.donation_count) || 0
+            }));
+
+            console.log("Supporters formatted:", JSON.stringify(formattedResults));
+            res.status(200).json({ success: true, supporters: formattedResults });
+        }
+    });
+});
+
 app.listen(3000, () => {
     console.log('Sunucu 3000 portunda çalışıyor...');
 });

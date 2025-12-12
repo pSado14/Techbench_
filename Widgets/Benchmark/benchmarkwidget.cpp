@@ -55,11 +55,30 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
       "QPushButton:disabled { background-color: #555; color: #aaa; }");
   ui->testi_iptal_et_buton->setCursor(Qt::PointingHandCursor);
 
+  // Modern Green Gradient for "Oyun Modu"
+  ui->oyun_modu_buton->setStyleSheet(
+      "QPushButton { "
+      "   background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, "
+      "y2:0, stop:0 #11998e, stop:1 #38ef7d); "
+      "   border-radius: 8px; "
+      "   color: white; "
+      "   padding: 8px 16px; "
+      "   font-weight: bold; "
+      "   font-size: 12px; "
+      "   border: none; "
+      "   outline: none;"
+      "}"
+      "QPushButton:hover { background-color: qlineargradient(spread:pad, "
+      "x1:0, y1:0, x2:1, y2:0, stop:0 #38ef7d, stop:1 #11998e); }"
+      "QPushButton:disabled { background-color: #555; color: #aaa; }");
+  ui->oyun_modu_buton->setCursor(Qt::PointingHandCursor);
+
   // Başlangıçta butonları ayarla
   ui->testi_baslat_buton->setEnabled(false);
   ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
   ui->testi_iptal_et_buton->setEnabled(
-      false); // Test başlayana kadar devre dışı
+      false);                             // Test başlayana kadar devre dışı
+  ui->oyun_modu_buton->setEnabled(false); // Sistem taranana kadar devre dışı
 
   setupCharts();
   setupHistoryList();
@@ -101,6 +120,7 @@ void BenchmarkWidget::setupCharts() {
 void BenchmarkWidget::enableStartButton() {
   ui->testi_baslat_buton->setEnabled(true);
   ui->testi_baslat_buton->setText("Testi Başlat");
+  ui->oyun_modu_buton->setEnabled(true); // Sistem tarandı, oyun modu aktif
 }
 
 // --- TESTİ BAŞLAT BUTONU ---
@@ -493,5 +513,93 @@ void BenchmarkWidget::reset() {
 
   if (ui->henuz_test_baslatilmadi_label) {
     ui->henuz_test_baslatilmadi_label->setText("Henüz test başlatılmadı.");
+  }
+}
+
+// --- OYUN MODU (GAME BOOSTER) ---
+void BenchmarkWidget::on_oyun_modu_buton_clicked() {
+  qDebug() << "Oyun Modu: RAM Optimizasyonu Başlatılıyor...";
+
+  ui->oyun_modu_buton->setEnabled(false);
+  ui->oyun_modu_buton->setText("Optimize ediliyor...");
+  if (ui->henuz_test_baslatilmadi_label) {
+    ui->henuz_test_baslatilmadi_label->setText("RAM temizleniyor...");
+  }
+  qApp->processEvents();
+
+  // Lambda: RAM miktarını ölç
+  auto getFreeRAM = []() -> double {
+    QProcess proc;
+    proc.start("wmic", {"OS", "get", "FreePhysicalMemory", "/value"});
+    proc.waitForFinished(3000);
+    QString output = proc.readAllStandardOutput();
+    QRegularExpression re("FreePhysicalMemory=(\\d+)");
+    QRegularExpressionMatch match = re.match(output);
+    if (match.hasMatch()) {
+      return match.captured(1).toDouble() / 1024.0; // KB -> MB
+    }
+    return 0;
+  };
+
+  // ÖNCEKİ RAM
+  double beforeMB = getFreeRAM();
+
+  // 1. Tüm işlemlerin Working Set'lerini boşalt (EmptyWorkingSet benzeri)
+  // PowerShell ile daha etkili bir temizlik
+  QProcess cleanProcess;
+  cleanProcess.start(
+      "powershell",
+      {"-Command",
+       "Get-Process | ForEach-Object { "
+       "try { $_.MinWorkingSet = 1; $_.MaxWorkingSet = 1 } catch {} }"});
+  cleanProcess.waitForFinished(10000);
+
+  // 2. .NET Garbage Collector'ü zorla çalıştır
+  QProcess gcProcess;
+  gcProcess.start(
+      "powershell",
+      {"-Command",
+       "[System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); "
+       "[System.GC]::Collect()"});
+  gcProcess.waitForFinished(5000);
+
+  // 3. Windows Prefetch/Superfetch cache'i temizle (yönetici gerekebilir)
+  QProcess cacheProcess;
+  cacheProcess.start("cmd", {"/c", "del /q /f %temp%\\*.tmp 2>nul"});
+  cacheProcess.waitForFinished(3000);
+
+  // Biraz bekle ki temizlik etkili olsun
+  QThread::msleep(1000);
+
+  // SONRAKİ RAM
+  double afterMB = getFreeRAM();
+
+  // Farkı hesapla
+  double freedMB = afterMB - beforeMB;
+  QString freedText;
+  if (freedMB > 0) {
+    freedText = QString(" %1 MB RAM kazanıldı!").arg(freedMB, 0, 'f', 0);
+  } else {
+    freedText = "RAM zaten optimize durumda.";
+  }
+
+  QString resultMessage = QString(" Oyun Modu Tamamlandı!\n\n"
+                                  "Önceki Boş RAM: %1 MB\n"
+                                  "Şimdiki Boş RAM: %2 MB\n\n"
+                                  "%3\n\n"
+                                  "Sistem teste hazır!")
+                              .arg(beforeMB, 0, 'f', 0)
+                              .arg(afterMB, 0, 'f', 0)
+                              .arg(freedText);
+
+  ModernMessageBox::information(this, "Oyun Modu", resultMessage);
+
+  ui->oyun_modu_buton->setEnabled(true);
+  ui->oyun_modu_buton->setText("Oyun Modu");
+
+  if (ui->henuz_test_baslatilmadi_label) {
+    ui->henuz_test_baslatilmadi_label->setText(
+        QString("Optimize edildi! +%1 MB RAM")
+            .arg(qMax(0.0, freedMB), 0, 'f', 0));
   }
 }

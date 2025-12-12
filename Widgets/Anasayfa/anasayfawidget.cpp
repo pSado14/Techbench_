@@ -594,6 +594,10 @@ void AnasayfaWidget::bilgileriSifirla() {
 
   if (ui->laptop_price_label)
     ui->laptop_price_label->setText("-");
+
+  // Global sıralamayı da sıfırla
+  if (ui->global_ranking_label)
+    ui->global_ranking_label->setText("Global Sıralama: -");
 }
 
 void AnasayfaWidget::setKullaniciBilgileri(const QString &ad) {

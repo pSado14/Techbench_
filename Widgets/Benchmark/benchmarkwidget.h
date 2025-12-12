@@ -32,6 +32,7 @@ private slots:
   void on_testi_baslat_buton_clicked();
   void on_testi_iptal_et_buton_clicked();
   void on_gecmisi_temizle_buton_clicked();
+  void on_oyun_modu_buton_clicked();
   void onWorkerProgress(int percent, int step);
   void onWorkerFinished(int cpuScore, int gpuScore, int ramScore);
   void onWorkerCanceled();

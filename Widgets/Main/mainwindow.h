@@ -19,6 +19,7 @@ class GirisWidget;
 class BagisWidget;
 class KayitWidget;
 class LiderlikWidget; // <-- EKLENDİ
+class DestekciWidget; // <-- EKLENDİ
 class QPushButton;
 
 class MainWindow : public QMainWindow {
@@ -68,5 +69,10 @@ private:
   LiderlikWidget *m_liderlik;
   QPushButton *ui_liderlikbuton;
   void on_liderlikbuton_clicked();
+
+  // --- 5. DESTEKÇİLERİM ---
+  DestekciWidget *m_destekci;
+  QPushButton *ui_destekcibuton;
+  void on_destekcibuton_clicked();
 };
 #endif // MAINWINDOW_H

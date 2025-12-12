@@ -799,3 +799,51 @@ void NetworkManager::getLeaderboard(
     reply->deleteLater();
   });
 }
+
+void NetworkManager::getTopSupporters(
+    const QString &username,
+    std::function<void(bool success, QList<QVariantMap> supporters,
+                       QString message)>
+        callback) {
+  QUrl url(BASE_URL + "/top-supporters");
+  QUrlQuery query;
+  query.addQueryItem("username", username);
+  url.setQuery(query);
+
+  QNetworkRequest request(url);
+  QNetworkReply *reply = manager->get(request);
+
+  connect(reply, &QNetworkReply::finished, [=]() {
+    bool success = false;
+    QList<QVariantMap> supportersList;
+    QString message;
+
+    if (reply->error() == QNetworkReply::NoError) {
+      QByteArray responseData = reply->readAll();
+      QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+      QJsonObject obj = jsonDoc.object();
+
+      if (obj["success"].toBool()) {
+        success = true;
+        QJsonArray supportersArray = obj["supporters"].toArray();
+        for (const QJsonValue &value : supportersArray) {
+          QJsonObject supporter = value.toObject();
+          QVariantMap supporterMap;
+          supporterMap["sender_username"] =
+              supporter["sender_username"].toString();
+          supporterMap["total_amount"] = supporter["total_amount"].toDouble();
+          supporterMap["donation_count"] = supporter["donation_count"].toInt();
+          supportersList.append(supporterMap);
+        }
+      } else {
+        success = false;
+        message = obj["message"].toString();
+      }
+    } else {
+      message = "Bağlantı Hatası: " + reply->errorString();
+    }
+
+    callback(success, supportersList, message);
+    reply->deleteLater();
+  });
+}

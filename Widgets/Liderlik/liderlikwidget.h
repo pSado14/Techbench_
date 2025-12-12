@@ -9,7 +9,6 @@
 #include <QVariantMap>
 #include <QWidget>
 
-
 class LiderlikWidget : public QWidget {
   Q_OBJECT
 public:

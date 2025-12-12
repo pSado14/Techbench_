@@ -12,5 +12,6 @@
         <file>Assets/cpu_icon.png</file>
         <file>Assets/refresh.png</file>
         <file>Assets/leaderboard.png</file>
+        <file>Assets/supporters.png</file>
     </qresource>
 </RCC>

@@ -2,6 +2,7 @@
 #include "anasayfawidget.h"
 #include "bagiswidget.h"
 #include "benchmarkwidget.h"
+#include "destekciwidget.h" // <-- DESTEKÇİLERİM
 #include "giriswidget.h"
 #include "karsilastirmawidget.h"
 #include "kayitwidget.h"
@@ -154,9 +155,7 @@ void MainWindow::on_girisyapbuton_clicked() {
 
     if (reply) {
       setLoginState(false);
-      resetAllPages(); // <-- YENİ: Tüm sayfaları sıfırla
-
-      ModernMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
+      resetAllPages(); // Tüm sayfaları sıfırla
 
       ModernMessageBox::information(this, "Bilgi", "Başarıyla çıkış yapıldı.");
       ui->stackedWidget->setCurrentWidget(m_anasayfa);
@@ -183,6 +182,7 @@ void MainWindow::setupPages() {
   m_bagis = new BagisWidget(this);
   m_kayit = new KayitWidget(this);
   m_liderlik = new LiderlikWidget(this);
+  m_destekci = new DestekciWidget(this);
 
   ui->stackedWidget->addWidget(m_anasayfa);
   ui->stackedWidget->addWidget(m_benchmark);
@@ -192,13 +192,31 @@ void MainWindow::setupPages() {
   ui->stackedWidget->addWidget(m_bagis);
   ui->stackedWidget->addWidget(m_kayit);
   ui->stackedWidget->addWidget(m_liderlik);
+  ui->stackedWidget->addWidget(m_destekci);
 
-  // Connect refresh signal
+  // Connect refresh signal for Liderlik
   connect(m_liderlik, &LiderlikWidget::refreshRequested, this, [=]() {
     netManager->getLeaderboard(
         [=](bool success, QList<QVariantMap> data, QString msg) {
           if (success)
             m_liderlik->updateLeaderboard(data);
+          else
+            ModernMessageBox::critical(this, "Hata", msg);
+        });
+  });
+
+  // Connect refresh signal for Destekci
+  connect(m_destekci, &DestekciWidget::refreshRequested, this, [=]() {
+    if (currentUsername.isEmpty()) {
+      ModernMessageBox::warning(this, "Uyarı",
+                                "Destekçileri görmek için giriş yapın.");
+      return;
+    }
+    netManager->getTopSupporters(
+        currentUsername,
+        [=](bool success, QList<QVariantMap> supporters, QString msg) {
+          if (success)
+            m_destekci->updateSupporters(supporters);
           else
             ModernMessageBox::critical(this, "Hata", msg);
         });
@@ -209,18 +227,27 @@ void MainWindow::setupPages() {
 // MENÜ VE SİNYAL KURULUMU
 // ===============================================
 void MainWindow::setupMenuButtons() {
-  // Create button dynamically
+  // Create Liderlik button dynamically
   ui_liderlikbuton = new QPushButton(" Liderlik Tablosu", this);
   ui_liderlikbuton->setIcon(QIcon(":/Assets/leaderboard.png"));
   ui_liderlikbuton->setIconSize(QSize(32, 32));
   ui_liderlikbuton->setCursor(Qt::PointingHandCursor);
 
+  // Create Destekçilerim button dynamically
+  ui_destekcibuton = new QPushButton(" Destekçilerim", this);
+  ui_destekcibuton->setIcon(QIcon(":/Assets/supporters.png"));
+  ui_destekcibuton->setIconSize(QSize(32, 32));
+  ui_destekcibuton->setCursor(Qt::PointingHandCursor);
+
   // Add to layout (Insert before Yardim)
   ui->solsayfalayout->insertWidget(ui->solsayfalayout->count() - 1,
                                    ui_liderlikbuton);
+  ui->solsayfalayout->insertWidget(ui->solsayfalayout->count() - 1,
+                                   ui_destekcibuton);
 
   menuButtons << ui->anasayfabuton << ui->benchmarkbuton
-              << ui->karsilastirmabuton << ui_liderlikbuton << ui->yardimbuton;
+              << ui->karsilastirmabuton << ui_liderlikbuton << ui_destekcibuton
+              << ui->yardimbuton;
 
   for (QPushButton *btn : menuButtons) {
     btn->setCursor(Qt::PointingHandCursor);
@@ -235,6 +262,8 @@ void MainWindow::setupMenuButtons() {
           &MainWindow::on_karsilastirmabuton_clicked);
   connect(ui_liderlikbuton, &QPushButton::clicked, this,
           &MainWindow::on_liderlikbuton_clicked);
+  connect(ui_destekcibuton, &QPushButton::clicked, this,
+          &MainWindow::on_destekcibuton_clicked);
   connect(ui->yardimbuton, &QPushButton::clicked, this,
           &MainWindow::on_yardimbuton_clicked);
   connect(ui->girisyapbuton, &QPushButton::clicked, this,
@@ -562,4 +591,23 @@ void MainWindow::resetAllPages() {
 
   // 6. Liderlik
   m_liderlik->updateLeaderboard({});
+
+  // 7. Destekçilerim
+  m_destekci->reset();
+}
+
+void MainWindow::on_destekcibuton_clicked() {
+  if (!userIsLoggedIn) {
+    ModernMessageBox::critical(
+        this, "Erişim Engellendi",
+        "Destekçilerinizi görmek için lütfen giriş yapınız.");
+    ui->stackedWidget->setCurrentWidget(m_giris);
+    updateButtonStyles(nullptr);
+    return;
+  }
+
+  // Kullanıcı adını ayarla ve sayfayı göster
+  m_destekci->setUsername(currentUsername);
+  ui->stackedWidget->setCurrentWidget(m_destekci);
+  updateButtonStyles(ui_destekcibuton);
 }

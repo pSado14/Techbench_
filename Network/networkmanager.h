@@ -123,6 +123,13 @@ public:
                          QString message)>
           callback);
 
+  // --- YENİ: Destekçileri Getirme ---
+  void getTopSupporters(
+      const QString &username,
+      std::function<void(bool success, QList<QVariantMap> supporters,
+                         QString message)>
+          callback);
+
 private:
   QNetworkAccessManager *manager;
   const QString BASE_URL = "http://127.0.0.1:3000"; // Node.js sunucu adresiniz
