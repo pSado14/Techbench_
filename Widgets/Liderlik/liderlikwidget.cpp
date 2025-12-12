@@ -37,8 +37,8 @@ void LiderlikWidget::setupUi() {
       8, QHeaderView::ResizeToContents); // RAM Score
   tableWidget->verticalHeader()->setVisible(false);
   tableWidget->verticalHeader()->setDefaultSectionSize(
-      60);                        // Increase row height
-  tableWidget->setWordWrap(true); // Enable word wrap
+      50); // Increase row height
+  tableWidget->setWordWrap(true);
   tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
   tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   tableWidget->setAlternatingRowColors(true);
@@ -51,6 +51,12 @@ void LiderlikWidget::setupUi() {
       "QTableWidget::item { padding: 5px; }"
       "QTableWidget::item:selected { background-color: #4facfe; color: white; "
       "}");
+
+  // Set minimum widths for hardware name columns
+  tableWidget->setColumnWidth(3, 180); // CPU
+  tableWidget->setColumnWidth(5, 180); // GPU
+  tableWidget->setColumnWidth(7, 150); // RAM
+
   layout->addWidget(tableWidget);
 
   // Refresh Button
@@ -91,7 +97,6 @@ void LiderlikWidget::updateLeaderboard(const QList<QVariantMap> &data) {
     QTableWidgetItem *userItem =
         new QTableWidgetItem(user["kullanici_adi"].toString());
     userItem->setToolTip(user["kullanici_adi"].toString());
-    userItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
     QTableWidgetItem *scoreItem =
         new QTableWidgetItem(QString::number(user["score"].toInt()));
@@ -100,21 +105,18 @@ void LiderlikWidget::updateLeaderboard(const QList<QVariantMap> &data) {
 
     QTableWidgetItem *cpuItem = new QTableWidgetItem(user["cpu"].toString());
     cpuItem->setToolTip(user["cpu"].toString());
-    cpuItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     QTableWidgetItem *cpuScoreItem =
         new QTableWidgetItem(QString::number(user["cpu_score"].toInt()));
     cpuScoreItem->setTextAlignment(Qt::AlignCenter);
 
     QTableWidgetItem *gpuItem = new QTableWidgetItem(user["gpu"].toString());
     gpuItem->setToolTip(user["gpu"].toString());
-    gpuItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     QTableWidgetItem *gpuScoreItem =
         new QTableWidgetItem(QString::number(user["gpu_score"].toInt()));
     gpuScoreItem->setTextAlignment(Qt::AlignCenter);
 
     QTableWidgetItem *ramItem = new QTableWidgetItem(user["ram"].toString());
     ramItem->setToolTip(user["ram"].toString());
-    ramItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     QTableWidgetItem *ramScoreItem =
         new QTableWidgetItem(QString::number(user["ram_score"].toInt()));
     ramScoreItem->setTextAlignment(Qt::AlignCenter);

@@ -65,6 +65,8 @@ void KarsilastirmaWidget::setupComparisonChart() {
   categories << "Toplam Puan";
   m_axisX = new QBarCategoryAxis();
   m_axisX->append(categories);
+  m_axisX->setLabelsAngle(0);        // Etiketleri düz tut
+  m_axisX->setTruncateLabels(false); // Etiketleri kırpma
   m_chart->addAxis(m_axisX, Qt::AlignBottom);
   m_series->attachAxis(m_axisX);
 
@@ -233,8 +235,11 @@ void KarsilastirmaWidget::on_arama_kutusu_textChanged(const QString &arg1) {
 
   for (int i = 0; i < ui->sistem_listesi->count(); ++i) {
     QListWidgetItem *item = ui->sistem_listesi->item(i);
-    // Item metninde arama yap (Case Insensitive)
-    if (item->text().contains(filter, Qt::CaseInsensitive)) {
+    // Sadece kullanıcı adına göre ara
+    QVariantMap data = item->data(Qt::UserRole).toMap();
+    QString username = data["kullanici_adi"].toString();
+
+    if (username.contains(filter, Qt::CaseInsensitive)) {
       item->setHidden(false);
     } else {
       item->setHidden(true);

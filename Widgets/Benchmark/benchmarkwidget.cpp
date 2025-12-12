@@ -55,9 +55,11 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
       "QPushButton:disabled { background-color: #555; color: #aaa; }");
   ui->testi_iptal_et_buton->setCursor(Qt::PointingHandCursor);
 
-  // Başlangıçta butonu devre dışı bırak (Sistem bilgisi taranmalı)
+  // Başlangıçta butonları ayarla
   ui->testi_baslat_buton->setEnabled(false);
   ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
+  ui->testi_iptal_et_buton->setEnabled(
+      false); // Test başlayana kadar devre dışı
 
   setupCharts();
   setupHistoryList();
@@ -236,7 +238,8 @@ void BenchmarkWidget::onWorkerFinished(int cpuScore, int gpuScore,
 
   ui->testi_baslat_buton->setText("Testi Başlat");
   ui->testi_baslat_buton->setEnabled(true);
-  ui->testi_iptal_et_buton->setEnabled(true);
+  ui->testi_iptal_et_buton->setEnabled(
+      false); // Test bitti, iptal butonu devre dışı
 
   if (ui->henuz_test_baslatilmadi_label) {
     ui->henuz_test_baslatilmadi_label->setText("Test tamamlandı.");
@@ -251,7 +254,8 @@ void BenchmarkWidget::onWorkerFinished(int cpuScore, int gpuScore,
 void BenchmarkWidget::onWorkerCanceled() {
   ui->testi_baslat_buton->setText("Testi Başlat");
   ui->testi_baslat_buton->setEnabled(true);
-  ui->testi_iptal_et_buton->setEnabled(true);
+  ui->testi_iptal_et_buton->setEnabled(
+      false); // Test iptal edildi, iptal butonu devre dışı
 
   if (ui->henuz_test_baslatilmadi_label) {
     ui->henuz_test_baslatilmadi_label->setText(
@@ -485,6 +489,7 @@ void BenchmarkWidget::reset() {
   // Buton durumunu başlangıç haline getir
   ui->testi_baslat_buton->setEnabled(false);
   ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
+  ui->testi_iptal_et_buton->setEnabled(false); // Reset durumunda da devre dışı
 
   if (ui->henuz_test_baslatilmadi_label) {
     ui->henuz_test_baslatilmadi_label->setText("Henüz test başlatılmadı.");
