@@ -82,11 +82,6 @@ void KarsilastirmaWidget::setupComparisonChart() {
   }
   QVBoxLayout *layout = new QVBoxLayout(ui->detayli_grafik_tutucu);
   layout->addWidget(m_chartView);
-
-  // Placeholder'ı gizle
-  if (ui->placeholder_detayli_grafik) {
-    ui->placeholder_detayli_grafik->hide();
-  }
 }
 
 void KarsilastirmaWidget::updateChart(int rivalScore) {

@@ -284,25 +284,7 @@ QLabel {
       <property name="styleSheet">
        <string notr="true">background-color: transparent;</string>
       </property>
-      <widget class="QLabel" name="placeholder_canli_grafik">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>661</width>
-         <height>191</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: #666; font-size: 10pt;</string>
-       </property>
-       <property name="text">
-        <string>Grafik Alanı (Dairesel İlerleme ve Çizgi Grafik)</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
+
      </widget>
     </item>
     <item>

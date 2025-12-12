@@ -861,20 +861,6 @@ void AnasayfaWidget::updateCharts(int cpuScore, int gpuScore, int ramScore) {
   // Helper lambda to create a chart for a specific container
   auto createChart = [&](QWidget *container, QString name, int score,
                          QColor color) {
-    // Placeholder'ı temizle (Eğer varsa)
-    if (container == ui->cpu_grafik_tutucu && ui->placeholder_cpu_grafik) {
-      delete ui->placeholder_cpu_grafik;
-      ui->placeholder_cpu_grafik = nullptr;
-    }
-    if (container == ui->gpu_grafik_tutucu && ui->placeholder_gpu_grafik) {
-      delete ui->placeholder_gpu_grafik;
-      ui->placeholder_gpu_grafik = nullptr;
-    }
-    if (container == ui->ram_grafik_tutucu && ui->placeholder_ram_grafik) {
-      delete ui->placeholder_ram_grafik;
-      ui->placeholder_ram_grafik = nullptr;
-    }
-
     // Layout oluştur (Eğer yoksa)
     if (!container->layout()) {
       new QVBoxLayout(container);

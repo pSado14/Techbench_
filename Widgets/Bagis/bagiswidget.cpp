@@ -36,14 +36,6 @@ void BagisWidget::setKullaniciAdi(const QString &username) {
 void BagisWidget::setEmail(const QString &email) { currentEmail = email; }
 
 void BagisWidget::setupUiProgrammatically() {
-  // 1. Clean existing UI
-  QList<QWidget *> children = findChildren<QWidget *>();
-  for (QWidget *child : children) {
-    child->deleteLater();
-  }
-  if (layout()) {
-    delete layout();
-  }
 
   QVBoxLayout *rootLayout = new QVBoxLayout(this);
   rootLayout->setContentsMargins(20, 20, 20, 20);
