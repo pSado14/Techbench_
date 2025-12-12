@@ -1,6 +1,7 @@
 #ifndef LIDERLIKWIDGET_H
 #define LIDERLIKWIDGET_H
 
+#include <QFrame>
 #include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>

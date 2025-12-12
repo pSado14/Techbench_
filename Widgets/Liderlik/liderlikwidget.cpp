@@ -6,18 +6,31 @@
 LiderlikWidget::LiderlikWidget(QWidget *parent) : QWidget(parent) { setupUi(); }
 
 void LiderlikWidget::setupUi() {
-  QVBoxLayout *layout = new QVBoxLayout(this);
-  layout->setContentsMargins(20, 20, 20, 20);
+  // Ana layout
+  QVBoxLayout *mainLayout = new QVBoxLayout(this);
+  mainLayout->setContentsMargins(20, 20, 20, 20);
+
+  // İçerik Container Frame - kenarlıklı, arka plan transparent
+  QFrame *contentFrame = new QFrame(this);
+  contentFrame->setStyleSheet("QFrame { "
+                              "  background-color: transparent; "
+                              "  border: 1px solid #3c404d; "
+                              "  border-radius: 12px; "
+                              "}");
+
+  QVBoxLayout *layout = new QVBoxLayout(contentFrame);
+  layout->setContentsMargins(30, 30, 30, 30);
   layout->setSpacing(15);
 
   // Title
-  QLabel *titleLabel = new QLabel("Global Liderlik Tablosu", this);
-  titleLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: "
-                            "#ffffff; margin-bottom: 10px;");
+  QLabel *titleLabel = new QLabel("Global Liderlik Tablosu", contentFrame);
+  titleLabel->setStyleSheet(
+      "font-size: 24px; font-weight: bold; color: "
+      "#ffffff; margin-bottom: 10px; border: none; background: transparent;");
   layout->addWidget(titleLabel);
 
   // Table
-  tableWidget = new QTableWidget(this);
+  tableWidget = new QTableWidget(contentFrame);
   tableWidget->setColumnCount(9);
   tableWidget->setHorizontalHeaderLabels({"Sıra", "Kullanıcı", "Toplam Puan",
                                           "CPU", "CPU Puan", "GPU", "GPU Puan",
@@ -43,7 +56,8 @@ void LiderlikWidget::setupUi() {
   tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   tableWidget->setAlternatingRowColors(true);
   tableWidget->setStyleSheet(
-      "QTableWidget { background-color: #2b2e38; color: white; border: none; "
+      "QTableWidget { background-color: #2b2e38; color: white; border: 1px "
+      "solid #3c404d; "
       "border-radius: 8px; gridline-color: #3c404d; "
       "alternate-background-color: #323642; }"
       "QHeaderView::section { background-color: #3c404d; color: white; "
@@ -59,13 +73,16 @@ void LiderlikWidget::setupUi() {
 
   layout->addWidget(tableWidget);
 
+  // Stretch - butonu aşağıya itmek için
+  layout->addStretch();
+
   // Refresh Button
-  refreshButton = new QPushButton("Listeyi Yenile", this);
+  refreshButton = new QPushButton("Listeyi Yenile", contentFrame);
   refreshButton->setCursor(Qt::PointingHandCursor);
   refreshButton->setFixedWidth(150);
   refreshButton->setStyleSheet(
       "QPushButton { background-color: #4facfe; color: white; border-radius: "
-      "8px; padding: 10px 20px; font-weight: bold; }"
+      "8px; padding: 10px 20px; font-weight: bold; border: none; }"
       "QPushButton:hover { background-color: #00f2fe; }");
   connect(refreshButton, &QPushButton::clicked, this,
           &LiderlikWidget::refreshRequested);
@@ -74,6 +91,9 @@ void LiderlikWidget::setupUi() {
   btnLayout->addStretch();
   btnLayout->addWidget(refreshButton);
   layout->addLayout(btnLayout);
+
+  // Container'ı ana layout'a ekle
+  mainLayout->addWidget(contentFrame);
 }
 
 void LiderlikWidget::updateLeaderboard(const QList<QVariantMap> &data) {

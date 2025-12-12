@@ -234,7 +234,7 @@ void MainWindow::setupMenuButtons() {
   ui_liderlikbuton->setCursor(Qt::PointingHandCursor);
 
   // Create Destekçilerim button dynamically
-  ui_destekcibuton = new QPushButton(" Destekçilerim", this);
+  ui_destekcibuton = new QPushButton("Destekçilerim", this);
   ui_destekcibuton->setIcon(QIcon(":/Assets/supporters.png"));
   ui_destekcibuton->setIconSize(QSize(32, 32));
   ui_destekcibuton->setCursor(Qt::PointingHandCursor);
@@ -469,14 +469,15 @@ void MainWindow::updateButtonStyles(QPushButton *clickedButton) {
 
   for (QPushButton *button : menuButtons) {
     QString style = defaultStyle;
-    if (button == ui_liderlikbuton) {
+    if (button == ui_liderlikbuton || button == ui_destekcibuton) {
       style.replace("padding-left: 20px;", "padding-left: 15px;");
     }
     button->setStyleSheet(style);
   }
   if (clickedButton) {
     QString style = selectedStyle;
-    if (clickedButton == ui_liderlikbuton) {
+    if (clickedButton == ui_liderlikbuton ||
+        clickedButton == ui_destekcibuton) {
       style.replace("padding-left: 20px;", "padding-left: 15px;");
     }
     clickedButton->setStyleSheet(style);

@@ -75,7 +75,7 @@ BenchmarkWidget::BenchmarkWidget(QWidget *parent)
 
   // Başlangıçta butonları ayarla
   ui->testi_baslat_buton->setEnabled(false);
-  ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
+  ui->testi_baslat_buton->setText("Sistem Bilgilerini Tara");
   ui->testi_iptal_et_buton->setEnabled(
       false);                             // Test başlayana kadar devre dışı
   ui->oyun_modu_buton->setEnabled(false); // Sistem taranana kadar devre dışı
@@ -508,7 +508,7 @@ void BenchmarkWidget::reset() {
 
   // Buton durumunu başlangıç haline getir
   ui->testi_baslat_buton->setEnabled(false);
-  ui->testi_baslat_buton->setText("Önce Sistem Bilgilerini Güncelleyin");
+  ui->testi_baslat_buton->setText("Sistem Bilgilerini Tara");
   ui->testi_iptal_et_buton->setEnabled(false); // Reset durumunda da devre dışı
 
   if (ui->henuz_test_baslatilmadi_label) {

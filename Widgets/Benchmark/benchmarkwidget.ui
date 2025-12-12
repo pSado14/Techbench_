@@ -101,19 +101,19 @@ QCheckBox:hover {
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_bellek_row">
+          <widget class="QCheckBox" name="bellek_testi_cb">
+           <property name="text">
+            <string>Bellek Testleri</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_butonlar">
            <item>
-            <widget class="QCheckBox" name="bellek_testi_cb">
-             <property name="text">
-              <string>Bellek Testleri</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_bellek">
+            <spacer name="horizontalSpacer_butonlar">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -126,25 +126,6 @@ QCheckBox:hover {
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="oyun_modu_buton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>130</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Oyun Modu</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QPushButton" name="testi_baslat_buton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -155,11 +136,42 @@ QCheckBox:hover {
              <property name="minimumSize">
               <size>
                <width>200</width>
-               <height>0</height>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>35</height>
               </size>
              </property>
              <property name="text">
               <string>Testi Başlat</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="oyun_modu_buton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>130</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>130</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Oyun Modu</string>
              </property>
             </widget>
            </item>
