@@ -24,6 +24,7 @@ include_directories(
     Widgets/Main
     Widgets/Liderlik
     Widgets/Destekci
+    Widgets/Common
 
     Network
 )
@@ -56,8 +57,8 @@ set(PROJECT_SOURCES
         Widgets/Bagis/bagiswidget.ui
         Widgets/Bagis/bagisistegidialog.cpp
         Widgets/Bagis/bagisistegidialog.h
-        Widgets/Bagis/moderndialogs.cpp
-        Widgets/Bagis/moderndialogs.h
+        Widgets/Common/moderndialogs.cpp
+        Widgets/Common/moderndialogs.h
         Widgets/Bagis/submerchantdialog.cpp
         Widgets/Bagis/submerchantdialog.h
         Widgets/Yardim/yardimwidget.cpp
