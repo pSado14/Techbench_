@@ -111,6 +111,11 @@ void KarsilastirmaWidget::setSizinSisteminiz(QString cpu, QString gpu,
 void KarsilastirmaWidget::setKullaniciBilgileri(QString username) {
   m_username = username;
   updateSizinSisteminizUI();
+
+  // Giriş yapıldığında butonu tekrar aktif et
+  if (ui->karsilastir_buton) {
+    ui->karsilastir_buton->setEnabled(true);
+  }
 }
 
 void KarsilastirmaWidget::updateSizinSisteminizUI() {
