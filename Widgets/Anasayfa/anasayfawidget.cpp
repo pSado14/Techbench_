@@ -595,6 +595,12 @@ void AnasayfaWidget::bilgileriSifirla() {
   if (ui->laptop_price_label)
     ui->laptop_price_label->setText("-");
 
+  if (ui->laptop_model_label)
+    ui->laptop_model_label->setText("-");
+
+  if (ui->laptop_info_frame)
+    ui->laptop_info_frame->setVisible(false);
+
   // Global sıralamayı da sıfırla
   if (ui->global_ranking_label)
     ui->global_ranking_label->setText("Global Sıralama: -");
