@@ -226,7 +226,7 @@ app.post('/login', (req, res) => {
     console.log("Giriş İsteği Geldi:", req.body.username);
     const { username, password } = req.body;
 
-    const sql = "SELECT * FROM kullanicilar WHERE kullanici_adi = ?";
+    const sql = "SELECT * FROM kullanicilar WHERE BINARY kullanici_adi = ?";
     db.query(sql, [username], (err, results) => {
         if (err) {
             console.error("Giriş Hatası (SQL):", err);
